@@ -19,9 +19,16 @@
 		"concurrently": "^9.1.2",
 		"dotenv": "^16.5.0",
 		"express": "^5.1.0",
+		"module-alias": "^2.2.3",
+		"node-appwrite": "^16.0.0",
 		"nodemon": "^3.1.10",
 		"rimraf": "^6.0.1",
 		"typescript": "^5.8.3"
 	},
-	"devDependencies": {}
+	"devDependencies": {
+		"@types/module-alias": "^2.0.4"
+	},
+	"_moduleAliases": {
+		"@": "./dist"
+	}
 }
