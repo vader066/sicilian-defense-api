@@ -6,6 +6,7 @@ import router from "./routes/router";
 const port = env.port;
 const app = express();
 
+app.use(express.json());
 app.use("/api", router);
 
 app.listen(5001, () => {
