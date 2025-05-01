@@ -31,6 +31,18 @@ export interface PLAYER {
 	clubs?: string;
 }
 
+type sex = "male" | "female" | undefined;
+
+export type Member = {
+	first_name: string;
+	last_name: string;
+	programme: string;
+	username: string;
+	dob: Date;
+	sex: sex;
+	rating: number;
+};
+
 export interface APPWRITE_TOURNAMENT {
 	total: number;
 	documents: TOURNAMENT[];

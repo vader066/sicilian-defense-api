@@ -27,6 +27,7 @@
 		"typescript": "^5.8.3"
 	},
 	"devDependencies": {
+		"@types/cors": "^2.8.17",
 		"@types/module-alias": "^2.0.4"
 	},
 	"_moduleAliases": {
