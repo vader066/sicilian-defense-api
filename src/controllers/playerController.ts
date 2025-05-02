@@ -8,9 +8,12 @@ import { Member } from "@/types/database/models";
 export async function getAllPlayers(_: Request, res: Response) {
 	try {
 		const result = await databases.listDocuments(db, playerCollection);
-		res.status(200).json({ message: "success", data: result });
+		res.status(200).json({ message: "success", data: result, status: 200 });
 	} catch (error: any) {
-		res.status(error.status).json({ message: error.message, data: null });
+		const status = error.code || 500;
+		res
+			.status(status)
+			.json({ message: error.message, data: null, status: status });
 	}
 }
 
@@ -24,10 +27,12 @@ export async function deletePlayer(req: Request, res: Response) {
 			req.params.id
 		);
 		console.log(response);
-		res.status(204).json({ message: "success" });
+		res.status(204).json({ message: "success", data: null, status: 204 });
 	} catch (error: any) {
 		console.log(error.message);
-		res.status(error.code || 404).json({ message: error.type });
+		res
+			.status(error.code || 404)
+			.json({ message: error.message, data: null, status: error.code || 404 });
 	}
 }
 
@@ -48,11 +53,16 @@ export async function addPlayer(req: Request, res: Response) {
 		);
 		res.status(201).json({
 			message: "success",
-			Created_at: response.$createdAt,
-			id: response.$id,
+			data: {
+				Created_at: response.$createdAt,
+				id: response.$id,
+			},
+			status: 201,
 		});
 	} catch (error: any) {
 		console.log(error.message);
-		res.status(error.code || 409).json({ message: error.type });
+		res
+			.status(error.code || 409)
+			.json({ message: error.type, data: null, status: error.code || 409 });
 	}
 }
