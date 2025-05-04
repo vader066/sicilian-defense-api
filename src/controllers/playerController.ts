@@ -2,12 +2,15 @@ import { Request, Response } from "express";
 import { db, playerCollection } from "@/models/name";
 import { databases } from "@/models/server/config";
 import { Member } from "@/types/database/models";
+import { Query } from "node-appwrite";
 
 //@desc Get all players
 //@route GET /api/players
 export async function getAllPlayers(_: Request, res: Response) {
 	try {
-		const result = await databases.listDocuments(db, playerCollection);
+		const result = await databases.listDocuments(db, playerCollection, [
+			Query.limit(50),
+		]);
 		res.status(200).json({ message: "success", data: result, status: 200 });
 	} catch (error: any) {
 		const status = error.code || 500;
@@ -27,9 +30,10 @@ export async function deletePlayer(req: Request, res: Response) {
 			req.params.id
 		);
 		console.log(response);
-		res.status(204).json({ message: "success", data: null, status: 204 });
+		res.status(204).send();
 	} catch (error: any) {
-		console.log(error.message);
+		console.log("There was an error deleting the player");
+		console.log(error);
 		res
 			.status(error.code || 404)
 			.json({ message: error.message, data: null, status: error.code || 404 });
