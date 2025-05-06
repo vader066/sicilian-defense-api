@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { db, playerCollection } from "@/models/name";
 import { databases } from "@/models/server/config";
-import { Member } from "@/types/database/models";
+import { Member, PLAYER } from "@/types/database/models";
 import { Query } from "node-appwrite";
+import { createPlayer } from "@/services/player-services";
 
 //@desc Get all players
 //@route GET /api/players
@@ -63,6 +64,60 @@ export async function addPlayer(req: Request, res: Response) {
 			},
 			status: 201,
 		});
+	} catch (error: any) {
+		console.log(error.message);
+		res
+			.status(error.code || 409)
+			.json({ message: error.type, data: null, status: error.code || 409 });
+	}
+}
+
+//@desc edit player from a club
+//@route PUT /api/players/:id
+export async function editPlayerInfo(req: Request, res: Response) {
+	try {
+		const request: Member = req.body;
+		const response = await databases.updateDocument(
+			db,
+			playerCollection,
+			request.username,
+			{
+				id: request.username,
+				name: `${request.first_name} ${request.last_name}`,
+				rating: request.rating,
+			}
+		);
+		res.status(201).json({
+			message: "success",
+			data: {
+				updated_at: response.$updatedAt,
+				id: response.$id,
+			},
+			status: 201,
+		});
+	} catch (error: any) {
+		console.log(error.message);
+		res
+			.status(error.code || 409)
+			.json({ message: error.type, data: null, status: error.code || 409 });
+	}
+}
+
+//@desc add List of players from a club
+//@route POST /api/players/populate
+export async function addBulkPlayers(req: Request, res: Response) {
+	try {
+		const players: PLAYER[] = req.body;
+		players.forEach(async (player) => {
+			await createPlayer(player);
+			console.log(player);
+		});
+		res.status(201).json({
+			message: "success",
+			data: null,
+			status: 201,
+		});
+		console.log("Player collection created");
 	} catch (error: any) {
 		console.log(error.message);
 		res

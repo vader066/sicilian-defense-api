@@ -1,6 +1,8 @@
 import {
+	addBulkPlayers,
 	addPlayer,
 	deletePlayer,
+	editPlayerInfo,
 	getAllPlayers,
 } from "@/controllers/playerController";
 import {
@@ -17,6 +19,8 @@ const router = Router();
 router.route("/players").get(getAllPlayers);
 router.route("/players/:id").delete(deletePlayer);
 router.route("/players/").post(addPlayer);
+router.route("/players/:id").put(editPlayerInfo);
+router.route("/players/populate").post(addBulkPlayers);
 
 // tournament routes
 router.route("/tournaments").get(getAllTournaments);
