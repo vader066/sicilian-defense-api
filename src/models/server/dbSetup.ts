@@ -3,7 +3,7 @@ import createGamesCollection from "./games.collection";
 import createTournamentsCollection from "./tournaments.collection";
 import createPlayerCollection from "./player.collection";
 import { databases } from "./config";
-import createClubsCollection from "./clubs.collection";
+import createClubsCollection from "./club.collection";
 
 export default async function getOrCreateDB() {
 	try {

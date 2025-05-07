@@ -1,5 +1,5 @@
-import { IndexType, Permission } from "node-appwrite";
-import { db, gameCollection } from "../name";
+import { IndexType, Permission, RelationshipType } from "node-appwrite";
+import { db, gameCollection, playerCollection } from "../name";
 import { databases } from "./config";
 
 export default async function createGamesCollection() {
@@ -14,32 +14,38 @@ export default async function createGamesCollection() {
 
 	await Promise.all([
 		databases.createStringAttribute(db, gameCollection, "gameId", 20, true),
-		databases.createStringAttribute(
+		databases.createRelationshipAttribute(
 			db,
 			gameCollection,
-			"players",
-			30,
-			true,
-			undefined,
-			true
+			playerCollection,
+			RelationshipType.ManyToMany,
+			false,
+			playerCollection
 		),
-		databases.createStringAttribute(
+		databases.createRelationshipAttribute(
 			db,
 			gameCollection,
-			"winner",
-			30,
-			true,
-			undefined
+			playerCollection,
+			RelationshipType.OneToMany,
+			false,
+			"winner"
 		),
-		// databases.createStringAttribute(db, gameCollection, "winner", 30, true),
-		// databases.createStringAttribute(
-		// 	db,
-		// 	gameCollection,
-		// 	"tournamentId",
-		// 	15,
-		// 	true,
-		// 	undefined
-		// ),
+		databases.createRelationshipAttribute(
+			db,
+			gameCollection,
+			playerCollection,
+			RelationshipType.OneToMany,
+			false,
+			"white"
+		),
+		databases.createRelationshipAttribute(
+			db,
+			gameCollection,
+			playerCollection,
+			RelationshipType.OneToMany,
+			false,
+			"black"
+		),
 		databases.createStringAttribute(db, gameCollection, "date", 30, true),
 	]);
 	console.log("Game Attributes created");

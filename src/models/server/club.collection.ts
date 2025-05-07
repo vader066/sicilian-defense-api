@@ -21,15 +21,6 @@ export default async function createClubsCollection() {
 		databases.createStringAttribute(
 			db,
 			clubCollection,
-			"id",
-			30,
-			true,
-			undefined
-		),
-
-		databases.createStringAttribute(
-			db,
-			clubCollection,
 			"name",
 			30,
 			true,
@@ -43,16 +34,6 @@ export default async function createClubsCollection() {
 			true,
 			undefined
 		),
-
-		databases.createStringAttribute(
-			db,
-			clubCollection,
-			"userName",
-			30,
-			true,
-			undefined
-		),
-
 		databases.createRelationshipAttribute(
 			db,
 			clubCollection,
@@ -79,9 +60,9 @@ export default async function createClubsCollection() {
 		databases.createIndex(
 			db,
 			clubCollection,
-			"id",
+			"name",
 			IndexType.Unique,
-			["id"],
+			["name", "email"],
 			["asc"]
 		),
 	]);

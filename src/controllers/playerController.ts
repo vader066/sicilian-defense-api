@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { db, playerCollection } from "@/models/name";
 import { databases } from "@/models/server/config";
-import { Member, PLAYER } from "@/types/database/models";
+import { PLAYER } from "@/types/database/models";
 import { Query } from "node-appwrite";
 import { createPlayer } from "@/services/player-services";
 
@@ -33,8 +33,7 @@ export async function deletePlayer(req: Request, res: Response) {
 		console.log(response);
 		res.status(204).send();
 	} catch (error: any) {
-		console.log("There was an error deleting the player");
-		console.log(error);
+		console.log("There was an error deleting the player", error);
 		res
 			.status(error.code || 404)
 			.json({ message: error.message, data: null, status: error.code || 404 });
@@ -45,15 +44,13 @@ export async function deletePlayer(req: Request, res: Response) {
 //@route POST /api/players/
 export async function addPlayer(req: Request, res: Response) {
 	try {
-		const request: Member = req.body;
+		const player: PLAYER = req.body;
 		const response = await databases.createDocument(
 			db,
 			playerCollection,
-			request.username,
+			player.username,
 			{
-				id: request.username,
-				name: `${request.first_name} ${request.last_name}`,
-				rating: request.rating,
+				...player,
 			}
 		);
 		res.status(201).json({
@@ -65,7 +62,7 @@ export async function addPlayer(req: Request, res: Response) {
 			status: 201,
 		});
 	} catch (error: any) {
-		console.log(error.message);
+		console.log("There was an error adding player", error);
 		res
 			.status(error.code || 409)
 			.json({ message: error.type, data: null, status: error.code || 409 });
@@ -76,15 +73,13 @@ export async function addPlayer(req: Request, res: Response) {
 //@route PUT /api/players/:id
 export async function editPlayerInfo(req: Request, res: Response) {
 	try {
-		const request: Member = req.body;
+		const player: PLAYER = req.body;
 		const response = await databases.updateDocument(
 			db,
 			playerCollection,
-			request.username,
+			player.username,
 			{
-				id: request.username,
-				name: `${request.first_name} ${request.last_name}`,
-				rating: request.rating,
+				...player,
 			}
 		);
 		res.status(201).json({
@@ -96,7 +91,7 @@ export async function editPlayerInfo(req: Request, res: Response) {
 			status: 201,
 		});
 	} catch (error: any) {
-		console.log(error.message);
+		console.log("There was an error updating the player", error);
 		res
 			.status(error.code || 409)
 			.json({ message: error.type, data: null, status: error.code || 409 });
@@ -119,7 +114,7 @@ export async function addBulkPlayers(req: Request, res: Response) {
 		});
 		console.log("Player collection created");
 	} catch (error: any) {
-		console.log(error.message);
+		console.log("There was an error adding players", error);
 		res
 			.status(error.code || 409)
 			.json({ message: error.type, data: null, status: error.code || 409 });
