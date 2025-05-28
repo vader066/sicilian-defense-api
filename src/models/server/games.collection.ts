@@ -14,41 +14,14 @@ export default async function createGamesCollection() {
 
 	await Promise.all([
 		databases.createStringAttribute(db, gameCollection, "gameId", 20, true),
-		databases.createRelationshipAttribute(
-			db,
-			gameCollection,
-			playerCollection,
-			RelationshipType.ManyToMany,
-			false,
-			playerCollection
-		),
-		databases.createRelationshipAttribute(
-			db,
-			gameCollection,
-			playerCollection,
-			RelationshipType.OneToMany,
-			false,
-			"winner"
-		),
-		databases.createRelationshipAttribute(
-			db,
-			gameCollection,
-			playerCollection,
-			RelationshipType.OneToMany,
-			false,
-			"white"
-		),
-		databases.createRelationshipAttribute(
-			db,
-			gameCollection,
-			playerCollection,
-			RelationshipType.OneToMany,
-			false,
-			"black"
-		),
-		databases.createStringAttribute(db, gameCollection, "date", 30, true),
+		databases.createStringAttribute(db, gameCollection, "black", 20, true),
+		databases.createStringAttribute(db, gameCollection, "white", 20, true),
+		databases.createStringAttribute(db, gameCollection, "winner", 20, true),
+		databases.createIntegerAttribute(db, gameCollection, "blackRating", false), //entry rating for black player
+		databases.createIntegerAttribute(db, gameCollection, "whiteRating", false), //entry rating for white player
+		databases.createDatetimeAttribute(db, gameCollection, "date", true),
 	]);
-	console.log("Game Attributes created");
+	console.log("Game Attributes has been created");
 
 	//Index for searching for games
 	await Promise.all([

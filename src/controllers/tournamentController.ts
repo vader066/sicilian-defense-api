@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { db, tournamentCollection } from "@/models/name";
+import { db, playerCollection, tournamentCollection } from "@/models/name";
 import { databases } from "@/models/server/config";
-import { TOURNAMENT } from "@/types/database/models";
-import { v4 as uuidv4 } from "uuid";
+import { ratingUpdate, TOURNAMENT } from "@/types/database/models";
 import { Query } from "node-appwrite";
 import { getArenaGames } from "@/services/lichess";
+import { toHyphenatedId } from "@/utils";
 
 //@desc Get all tournaments
 //@route GET /api/tournaments
@@ -25,14 +25,14 @@ export async function getAllTournaments(_: Request, res: Response) {
 //@desc add tournament from a club
 //@route POST /api/tournaments/
 export async function addTournament(req: Request, res: Response) {
-	const id = uuidv4();
 	try {
 		const request: { tournament: TOURNAMENT } = await req.body;
 		const { tournament } = request;
+		const docId = toHyphenatedId(tournament.tournamentId);
 		const response = await databases.createDocument(
 			db,
 			tournamentCollection,
-			id,
+			docId,
 			{
 				tournamentId: tournament.tournamentId,
 				players: tournament.players,
@@ -60,21 +60,35 @@ export async function addTournament(req: Request, res: Response) {
 //@route PATCH /sync-tournament/:id
 export async function syncTournament(req: Request, res: Response) {
 	try {
-		const response = await databases.updateDocument(
+		const playerUpdates: ratingUpdate[] = req.body.ratingUpdates;
+		const docId = toHyphenatedId(req.params.id);
+		console.log(req.params.id);
+
+		const tournamentUpdatePromise = databases.updateDocument(
 			db,
 			tournamentCollection,
-			req.params.id,
+			docId,
 			{
 				synced: true,
+				games: req.body.games,
 			}
 		);
+		const playerUpdatePromises = playerUpdates.map((update) => {
+			return databases.updateDocument(db, playerCollection, update.username, {
+				rating: update.newRating,
+			});
+		});
+		const response = await Promise.all([
+			tournamentUpdatePromise,
+			...playerUpdatePromises,
+		]);
 		console.log(response);
-		res.status(200).json({ message: "success", data: null, status: 200 });
+		res.status(200).json({ message: "success", data: response, status: 200 });
 	} catch (error: any) {
-		console.log(error.message);
+		console.log(error);
 		res
 			.status(error.code || 500)
-			.json({ message: error.message, data: null, status: error.code || 500 });
+			.json({ message: error, data: null, status: error.code || 500 });
 	}
 }
 

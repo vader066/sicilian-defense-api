@@ -52,7 +52,14 @@ export default async function createPlayerCollection() {
 			playerCollection
 		),
 		databases.createDatetimeAttribute(db, playerCollection, "dob", true),
-		databases.createIntegerAttribute(db, playerCollection, "rating", true),
+		databases.createFloatAttribute(
+			db,
+			playerCollection,
+			"rating",
+			true,
+			0,
+			10000
+		),
 	]);
 	console.log("Player Attributes created");
 

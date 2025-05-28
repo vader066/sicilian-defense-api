@@ -1,4 +1,9 @@
-import { IndexType, Permission, RelationshipType } from "node-appwrite";
+import {
+	IndexType,
+	Permission,
+	RelationMutate,
+	RelationshipType,
+} from "node-appwrite";
 import { db, tournamentCollection, gameCollection } from "../name";
 import { databases } from "./config";
 
@@ -51,7 +56,8 @@ export default async function createTournamentsCollection() {
 			RelationshipType.OneToMany,
 			true,
 			gameCollection,
-			tournamentCollection
+			tournamentCollection,
+			RelationMutate.Cascade
 		),
 	]);
 	console.log("Tournaments Attributes created");
