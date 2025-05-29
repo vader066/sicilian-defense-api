@@ -34,24 +34,25 @@ export default async function createClubsCollection() {
 			true,
 			undefined
 		),
-		databases.createRelationshipAttribute(
-			db,
-			clubCollection,
-			playerCollection,
-			RelationshipType.OneToMany,
-			true,
-			playerCollection,
-			clubCollection
-		),
-		databases.createRelationshipAttribute(
-			db,
-			clubCollection,
-			tournamentCollection,
-			RelationshipType.OneToMany,
-			true,
-			tournamentCollection,
-			clubCollection
-		),
+		// databases.createRelationshipAttribute(
+		// 	db,
+		// 	clubCollection,
+		// 	playerCollection,
+		// 	RelationshipType.OneToMany,
+		// 	true,
+		// 	playerCollection,
+		// 	clubCollection
+		// ),
+		// databases.createRelationshipAttribute(
+		// 	db,
+		// 	clubCollection,
+		// 	tournamentCollection,
+		// 	RelationshipType.OneToMany,
+		// 	true,
+		// 	tournamentCollection,
+		// 	clubCollection
+		// ),
+		//will implement later
 	]);
 	console.log("Clubs Attributes created");
 

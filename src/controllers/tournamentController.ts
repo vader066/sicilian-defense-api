@@ -62,7 +62,6 @@ export async function syncTournament(req: Request, res: Response) {
 	try {
 		const playerUpdates: ratingUpdate[] = req.body.ratingUpdates;
 		const docId = toHyphenatedId(req.params.id);
-		console.log(req.params.id);
 
 		const tournamentUpdatePromise = databases.updateDocument(
 			db,
@@ -82,7 +81,7 @@ export async function syncTournament(req: Request, res: Response) {
 			tournamentUpdatePromise,
 			...playerUpdatePromises,
 		]);
-		console.log(response);
+
 		res.status(200).json({ message: "success", data: response, status: 200 });
 	} catch (error: any) {
 		console.log(error);

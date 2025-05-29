@@ -42,15 +42,16 @@ export default async function createPlayerCollection() {
 			60,
 			true
 		),
-		databases.createRelationshipAttribute(
-			db,
-			playerCollection,
-			clubCollection,
-			RelationshipType.ManyToOne,
-			true,
-			clubCollection,
-			playerCollection
-		),
+		// databases.createRelationshipAttribute(
+		// 	db,
+		// 	playerCollection,
+		// 	clubCollection,
+		// 	RelationshipType.ManyToOne,
+		// 	true,
+		// 	clubCollection,
+		// 	playerCollection
+		// ),
+		//will implement later
 		databases.createDatetimeAttribute(db, playerCollection, "dob", true),
 		databases.createFloatAttribute(
 			db,
