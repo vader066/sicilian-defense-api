@@ -28,7 +28,7 @@
 		"uuid": "^11.1.0"
 	},
 	"devDependencies": {
-		"@types/cors": "^2.8.17",
+		"@types/cors": "^2.8.18",
 		"@types/module-alias": "^2.0.4"
 	},
 	"_moduleAliases": {
