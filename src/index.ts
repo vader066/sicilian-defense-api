@@ -30,7 +30,7 @@ app.use(
 app.use(express.json());
 app.use("/api", router);
 
-app.listen(5001, () => {
+app.listen(port, () => {
 	console.log(`Server is running on port ${port}`);
 	// eslint-disable-next-line no-console
 	console.log(`http://localhost:${port}`);

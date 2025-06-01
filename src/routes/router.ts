@@ -15,6 +15,14 @@ import { Router } from "express";
 
 const router = Router();
 
+// Check if the server is running
+router.route("/health").get((_, res) => {
+	res.status(200).json({
+		message: "Server is running",
+		status: 200,
+	});
+});
+
 // player routes
 router.route("/players").get(getAllPlayers);
 router.route("/players/:id").delete(deletePlayer);
