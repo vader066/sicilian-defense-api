@@ -38,7 +38,7 @@ jobs:
 
       - name: Test container with curl
         run: |
-          curl --fail http://localhost:5001/health || (docker logs api-test && exit 1)
+          curl --fail http://localhost:5001/api/health || (docker logs api-test && exit 1)
 
       - name: Stop and remove container
         if: always()
