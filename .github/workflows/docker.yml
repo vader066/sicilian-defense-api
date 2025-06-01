@@ -25,8 +25,16 @@ jobs:
 
       - name: Run container from image
         run: |
-          docker run -d --name api-test -p 5001:5001 ${{ secrets.DOCKERHUB_USERNAME }}/sicilian-defense-api:latest
-          sleep 5  # Wait for the app to start
+          docker run -d \
+           --name api-test \
+           -p 5001:5001 \
+           -e PORT=${{ vars.PORT }} \
+           -e NODE_ENV=${{ vars.NODE_ENV }} \
+           -e PUBLIC_APPWRITE_HOST_URL=${{ vars.PUBLIC_APPWRITE_HOST_URL }} \
+           -e PUBLIC_APPWRITE_PROJECT_ID=${{ vars.PUBLIC_APPWRITE_PROJECT_ID }} \
+           -e APPWRITE_API_KEY=${{ secrets.APPWRITE_API_KEY }} \
+           ${{ secrets.DOCKERHUB_USERNAME }}/sicilian-defense-api:latest
+          sleep 10  # Wait for the app to start
 
       - name: Test container with curl
         run: |
