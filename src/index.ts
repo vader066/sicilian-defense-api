@@ -34,4 +34,6 @@ app.listen(port, '0.0.0.0', () => {
 	console.log(`Server is running on port ${port}`);
 	// eslint-disable-next-line no-console
 	console.log(`http://localhost:${port}`);
+	console.log(`new IP is 0.0.0.0`);
+	
 });
