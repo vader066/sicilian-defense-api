@@ -21,7 +21,7 @@ const app = express();
 
 app.use(
 	cors({
-		origin: "https://sicilian-defense-ui-latest.onrender.com",
+		origin: "https://sicilian-defense-ui-app.onrender.com",
 		methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 		credentials: true,
