@@ -19,9 +19,15 @@ const app = express();
 	}
 })();
 
+let allowedOrigin: string;
+if (env.environment === "production") {
+	allowedOrigin = "https://sicilian-defense-ui-app.onrender.com";
+} else {
+	allowedOrigin = "http://localhost:3000";
+}
 app.use(
 	cors({
-		origin: "https://sicilian-defense-ui-app.onrender.com",
+		origin: allowedOrigin,
 		methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 		credentials: true,
@@ -30,10 +36,9 @@ app.use(
 app.use(express.json());
 app.use("/api", router);
 
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, "0.0.0.0", () => {
 	console.log(`Server is running on port ${port}`);
 	// eslint-disable-next-line no-console
 	console.log(`http://localhost:${port}`);
 	console.log(`new IP is 0.0.0.0`);
-	
 });

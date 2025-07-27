@@ -8,6 +8,7 @@ const env = {
 		apikey: String(process.env.APPWRITE_API_KEY),
 	},
 	port: Number(process.env.PORT) || 5001,
+	environment: String(process.env.NODE_ENV) || "development",
 };
 
 export default env;

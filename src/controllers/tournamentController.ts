@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { db, playerCollection, tournamentCollection } from "@/models/name";
 import { databases } from "@/models/server/config";
 import { ratingUpdate, TOURNAMENT } from "@/types/database/models";
-import { Query } from "node-appwrite";
 import { getArenaGames } from "@/services/lichess";
 import { toHyphenatedId } from "@/utils";
 
@@ -10,9 +9,7 @@ import { toHyphenatedId } from "@/utils";
 //@route GET /api/tournaments
 export async function getAllTournaments(_: Request, res: Response) {
 	try {
-		const result = await databases.listDocuments(db, tournamentCollection, [
-			Query.limit(3),
-		]);
+		const result = await databases.listDocuments(db, tournamentCollection);
 		res.status(200).json({ message: "success", data: result, status: 200 });
 	} catch (error: any) {
 		const status = error.code || 404;
