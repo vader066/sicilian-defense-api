@@ -16,10 +16,18 @@ export default async function createGamesCollection() {
 		databases.createStringAttribute(db, gameCollection, "gameId", 20, true),
 		databases.createStringAttribute(db, gameCollection, "black", 20, true),
 		databases.createStringAttribute(db, gameCollection, "white", 20, true),
-		databases.createStringAttribute(db, gameCollection, "winner", 20, true),
+		databases.createStringAttribute(db, gameCollection, "winner", 20, false),
 		databases.createIntegerAttribute(db, gameCollection, "blackRating", false), //entry rating for black player
 		databases.createIntegerAttribute(db, gameCollection, "whiteRating", false), //entry rating for white player
 		databases.createDatetimeAttribute(db, gameCollection, "date", true),
+		databases.createBooleanAttribute(db, gameCollection, "draw", false),
+		databases.createEnumAttribute(
+			db,
+			gameCollection,
+			"forfeit",
+			["BF", "WF", "FF"],
+			false
+		),
 	]);
 	console.log("Game Attributes has been created");
 
