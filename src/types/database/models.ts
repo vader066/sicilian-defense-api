@@ -31,17 +31,17 @@ export type ratingUpdate = {
 };
 
 export interface PLAYER {
-	rating: number;
-	club: string;
-	sex: sex;
-	dob: Date;
-	username: string;
-	programme: string;
-	first_name: string;
-	last_name: string;
-}
-
-type sex = "male" | "female" | undefined;
+  id: string;                 // UUID
+  club_id: string;            // UUID
+  first_name: string;
+  last_name: string;
+  programme: string;
+  username: string;
+  date_of_birth: string;      // DATE in Postgres maps to string in JS/TS
+  sex: 'MALE' | 'FEMALE';     // Enum
+  created_at: string;         // TIMESTAMP maps to string
+  updated_at: string;         // TIMESTAMP maps to string
+};
 
 export interface APPWRITE_TOURNAMENT {
 	total: number;
