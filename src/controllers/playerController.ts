@@ -3,7 +3,7 @@ import { db, playerCollection } from "@/models/name";
 import { databases } from "@/models/server/config";
 import { PLAYER } from "@/types/database/models";
 import { Query } from "node-appwrite";
-import { createPlayer } from "@/services/player-services";
+import { createPlayer } from "@/services/player-service/repository";
 
 //@desc Get all players
 //@route GET /api/players

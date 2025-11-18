@@ -1,8 +1,27 @@
 export interface CLUB {
-	name: string;
+	id: string;
+	club_name: string;
+	number_of_players: number;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface ADMIN {
+	id: string;
+	first_name: string;
+	last_name: string;
 	email: string;
-	players: Array<PLAYER>;
-	tournaments: Array<TOURNAMENT>;
+	club_id: string;
+	admin_name?: string;
+	username: string;
+	creator: boolean;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface ADMINAUTH {
+	admin_id: string;
+	password_hash: string;
 }
 
 export interface GAMES {
@@ -33,17 +52,17 @@ export type ratingUpdate = {
 };
 
 export interface PLAYER {
-	rating: number;
-	club: string;
-	sex: sex;
-	dob: Date;
-	username: string;
-	programme: string;
+	id: string;
+	club_id: string;
 	first_name: string;
 	last_name: string;
+	programme: string;
+	username: string;
+	date_of_birth: string;
+	sex: "MALE" | "FEMALE";
+	created_at: string;
+	updated_at: string;
 }
-
-type sex = "male" | "female" | undefined;
 
 export interface APPWRITE_TOURNAMENT {
 	total: number;
