@@ -1,8 +1,27 @@
 export interface CLUB {
-	name: string;
+	id: string;
+	club_name: string;
+	number_of_players: number;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface ADMIN {
+	id: string;
+	first_name: string;
+	last_name: string;
 	email: string;
-	players: Array<PLAYER>;
-	tournaments: Array<TOURNAMENT>;
+	club_id: string;
+	admin_name?: string;
+	username: string;
+	creator: boolean;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface ADMINAUTH {
+	admin_id: string;
+	password_hash: string;
 }
 
 export interface GAMES {
@@ -31,17 +50,17 @@ export type ratingUpdate = {
 };
 
 export interface PLAYER {
-  id: string;                 // UUID
-  club_id: string;            // UUID
-  first_name: string;
-  last_name: string;
-  programme: string;
-  username: string;
-  date_of_birth: string;      // DATE in Postgres maps to string in JS/TS
-  sex: 'MALE' | 'FEMALE';     // Enum
-  created_at: string;         // TIMESTAMP maps to string
-  updated_at: string;         // TIMESTAMP maps to string
-};
+	id: string;
+	club_id: string;
+	first_name: string;
+	last_name: string;
+	programme: string;
+	username: string;
+	date_of_birth: string;
+	sex: "MALE" | "FEMALE";
+	created_at: string;
+	updated_at: string;
+}
 
 export interface APPWRITE_TOURNAMENT {
 	total: number;

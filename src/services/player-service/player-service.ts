@@ -1,29 +1,32 @@
 import { PLAYER } from "@/types/database/models";
-import { getClubPlayers, getPlayerById, getPlayerByUsername } from "./repository";
+import { PlayerRepository } from "./repository";
 
-export async function GetPlayerByID(id: string): Promise<PLAYER> {
-  if (id === "") {
-    throw new Error('PlayerId must be provided');
-  }
-  const player = await getPlayerById(id);
+export class PlayerService {
+	private playerRepository = new PlayerRepository();
+	async GetPlayerByID(id: string): Promise<PLAYER> {
+		if (id === "") {
+			throw new Error("PlayerId must be provided");
+		}
+		const player = await this.playerRepository.getPlayerById(id);
 
-  return player;
-}
+		return player;
+	}
 
-export async function GetPlayerByUsername(username: string): Promise<PLAYER> {
-  if (username === "") {
-    throw new Error('Username must be provided');
-  }
-  const player = await getPlayerByUsername(username);
+	async GetPlayerByUsername(username: string): Promise<PLAYER> {
+		if (username === "") {
+			throw new Error("Username must be provided");
+		}
+		const player = await this.playerRepository.getPlayerByUsername(username);
 
-  return player;
-}
+		return player;
+	}
 
-export async function GetClubPlayers(id: string): Promise<PLAYER[]> {
-  if (id === "") {
-    throw new Error('Club ID must be provided');
-  }
-  const clubPlayers = await getClubPlayers(id);
+	async GetClubPlayers(id: string): Promise<PLAYER[]> {
+		if (id === "") {
+			throw new Error("Club ID must be provided");
+		}
+		const clubPlayers = await this.playerRepository.getClubPlayers(id);
 
-  return clubPlayers;
+		return clubPlayers;
+	}
 }

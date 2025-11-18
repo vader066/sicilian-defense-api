@@ -1,4 +1,5 @@
-import { getClubPlayersHandler, getPlayerByIdHandler, getPlayerByUsernameHandler } from "@/services/player-service/handler";
+import { ClubServiceHandler } from "@/services/club-service/handler";
+import { PlayerServiceHandler } from "@/services/player-service/handler";
 import { Router } from "express";
 
 const router = Router();
@@ -11,11 +12,22 @@ router.route("/health").get((_, res) => {
 	});
 });
 
+// initialize handlers
+const clubServiceHandler = new ClubServiceHandler();
+const playerServiceHandler = new PlayerServiceHandler();
+
 // player routes
 // new endpoints
-router.route("/club/:clubId/players").get(getClubPlayersHandler);
-router.route("/players/:playerId").get(getPlayerByIdHandler);
-router.route("/players/username/:username").get(getPlayerByUsernameHandler);
+router
+	.route("/club/:clubId/players")
+	.get(playerServiceHandler.getClubPlayersHandler);
+router.route("/sign-up").post(clubServiceHandler.createClubAccount);
+router
+	.route("/players/:playerId")
+	.get(playerServiceHandler.getPlayerByIdHandler);
+router
+	.route("/players/username/:username")
+	.get(playerServiceHandler.getPlayerByUsernameHandler);
 
 // router.route("/players").get(getAllPlayers);
 // router.route("/players/:id").delete(deletePlayer);
