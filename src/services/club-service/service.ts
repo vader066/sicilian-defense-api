@@ -34,7 +34,7 @@ export class ClubService {
 		await AdminClient.createAdminUser(admin);
 
 		// create admin auth
-		const hashedPassword = req.password;
+		const hashedPassword = await AdminAuthClient.hashPassword(req.password);
 		const adminAuth: ADMINAUTH = {
 			admin_id: admin.id,
 			password_hash: hashedPassword,

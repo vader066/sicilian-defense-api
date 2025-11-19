@@ -4,6 +4,19 @@ import { AdminRepository } from "./repository";
 export class AdminManagementService {
 	private adminRepository = new AdminRepository();
 
+	async getAdminByID(adminId: string): Promise<ADMIN> {
+		const admin = await this.adminRepository.getAdminById(adminId);
+		return admin;
+	}
+
+	async getAdminByEmail(email: string): Promise<ADMIN> {
+		const admin = await this.adminRepository.getAdminByEmail(email);
+		if (!admin) {
+			throw new Error("Admin not found");
+		}
+		return admin;
+	}
+
 	async createAdminUser(admin: ADMIN) {
 		// check for existing admin with email
 		const existingAdminWithSameEmail =

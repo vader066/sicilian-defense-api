@@ -3,7 +3,7 @@ import { db, playerCollection } from "@/models/name";
 import { databases } from "@/models/server/config";
 import { PLAYER } from "@/types/database/models";
 import { Query } from "node-appwrite";
-import { createPlayer } from "@/services/player-service/repository";
+import { PlayerRepository } from "@/services/player-service/repository";
 
 //@desc Get all players
 //@route GET /api/players
@@ -101,10 +101,11 @@ export async function editPlayerInfo(req: Request, res: Response) {
 //@desc add List of players from a club
 //@route POST /api/players/populate
 export async function addBulkPlayers(req: Request, res: Response) {
+	const playerRepo = new PlayerRepository();
 	try {
 		const players: PLAYER[] = req.body;
 		players.forEach(async (player) => {
-			await createPlayer(player);
+			await playerRepo.createPlayer(player);
 			console.log(player);
 		});
 		res.status(201).json({

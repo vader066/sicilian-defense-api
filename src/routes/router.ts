@@ -1,3 +1,4 @@
+import { AdminAuthHandler } from "@/services/admin-auth-service/handler";
 import { ClubServiceHandler } from "@/services/club-service/handler";
 import { PlayerServiceHandler } from "@/services/player-service/handler";
 import { Router } from "express";
@@ -15,25 +16,22 @@ router.route("/health").get((_, res) => {
 // initialize handlers
 const clubServiceHandler = new ClubServiceHandler();
 const playerServiceHandler = new PlayerServiceHandler();
+const adminAuthHandler = new AdminAuthHandler();
 
 // player routes
-// new endpoints
 router
 	.route("/club/:clubId/players")
 	.get(playerServiceHandler.getClubPlayersHandler);
-router.route("/sign-up").post(clubServiceHandler.createClubAccount);
-router
-	.route("/players/:playerId")
-	.get(playerServiceHandler.getPlayerByIdHandler);
-router
-	.route("/players/username/:username")
-	.get(playerServiceHandler.getPlayerByUsernameHandler);
-
-// router.route("/players").get(getAllPlayers);
-// router.route("/players/:id").delete(deletePlayer);
+router.route("/players/:playerId").get(playerServiceHandler.getPlayerHandler);
+// router.route("/players/:id").delete(deletePlayer); If we delete a player what happens to the games he has played? what happens to the tournaments and the ratings?
 // router.route("/players/").post(addPlayer);
 // router.route("/players/:id").put(editPlayerInfo);
 // router.route("/players/populate").post(addBulkPlayers);
+
+// admin routes
+// - public
+router.route("/admin/sign-up").post(clubServiceHandler.createClubAccount);
+router.route("/admin/login").post(adminAuthHandler.Login);
 
 // tournament routes
 // router.route("/tournaments").get(getAllTournaments);
