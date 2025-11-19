@@ -9,7 +9,6 @@ interface CREATEACCOUNTRES extends ADMIN, CLUB {}
 
 export class ClubService {
 	private clubRepository = new ClubRepository();
-	private adminClient = new AdminClient();
 	async createAccount(req: CREATEACCOUNTREQ): Promise<CREATEACCOUNTRES> {
 		// create club
 		const clubID = randomUUID();
@@ -46,5 +45,13 @@ export class ClubService {
 			...admin,
 			...club,
 		};
+	}
+
+	async getClubByID(id: string): Promise<CLUB | null> {
+		if (id === "") {
+			throw new Error("Club ID must be provided");
+		}
+		const club = await this.clubRepository.getClubById(id);
+		return club;
 	}
 }

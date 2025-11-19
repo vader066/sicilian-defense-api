@@ -2,14 +2,14 @@ import { pool } from "@/db/db";
 import { CLUB } from "@/types/database/models";
 
 export class ClubRepository {
-	async getClubById(id: string): Promise<CLUB> {
+	async getClubById(id: string): Promise<CLUB | null> {
 		try {
 			const result = await pool.query<CLUB>(
 				"SELECT * FROM clubs WHERE id = $1",
 				[id]
 			);
 			const club = result.rows[0];
-			if (!club) throw new Error("Club not found");
+			if (!club) return null;
 			return club;
 		} catch (error: any) {
 			throw new Error(`getClubById: ${error.message}`);
@@ -47,8 +47,8 @@ export class ClubRepository {
 			const query = `
       UPDATE clubs 
         club_name = $2,
-        number_of_players = $3
-        updated_at = NOW() 
+        number_of_players = $3,
+        updated_at = NOW(),
       WHERE id = $1
     `;
 			await pool.query(query, [

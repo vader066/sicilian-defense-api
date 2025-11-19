@@ -11,24 +11,41 @@ export class PlayerRepository {
 		console.log("Player created");
 	}
 
-	async getPlayerByUsername(username: string): Promise<PLAYER> {
+	async createPlayerV2(player: PLAYER) {
+		const result = await pool.query(
+			"INSERT INTO players (id, club_id, first_name, last_name, programme, username, date_of_birth, sex, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()) RETURNING *",
+			[
+				player.id,
+				player.club_id,
+				player.first_name,
+				player.last_name,
+				player.programme,
+				player.username,
+				player.date_of_birth,
+				player.sex,
+			]
+		);
+		return result.rows[0];
+	}
+
+	async getPlayerByUsername(username: string): Promise<PLAYER | null> {
 		const result = await pool.query<PLAYER>(
 			"SELECT * FROM players WHERE username = $1",
 			[username]
 		);
 		const player = result.rows[0];
-		if (!player) throw new Error("Player not found");
+		if (!player) return null;
 
 		return player;
 	}
 
-	async getPlayerById(id: string): Promise<PLAYER> {
+	async getPlayerById(id: string): Promise<PLAYER | null> {
 		const result = await pool.query<PLAYER>(
 			"SELECT * FROM players WHERE id = $1",
 			[id]
 		);
 		const player = result.rows[0];
-		if (!player) throw new Error("Player not found");
+		if (!player) return null;
 
 		return player;
 	}
@@ -46,6 +63,35 @@ export class PlayerRepository {
 				`Error in repo function getClubPlayers: ${error.message}`
 			);
 		}
+	}
+
+	async updatePlayer(player: PLAYER): Promise<PLAYER> {
+		const query = `
+    UPDATE players
+    SET club_id = $2,
+        first_name = $3,
+        last_name = $4,
+        programme = $5,
+        username = $6,
+        date_of_birth = $7,
+        sex = $8,
+        updated_at = NOW()
+    WHERE id = $1
+    RETURNING *;
+    `;
+		const result = await pool.query<PLAYER>(query, [
+			player.id,
+			player.club_id,
+			player.first_name,
+			player.last_name,
+			player.programme,
+			player.username,
+			player.date_of_birth,
+			player.sex,
+		]);
+
+		const updatedPlayer = result.rows[0];
+		return updatedPlayer;
 	}
 }
 
