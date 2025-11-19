@@ -5,4 +5,7 @@ export class AdminAuthClient {
 	static createAdminAuth = this.adminAuthService.createAdminAuth.bind(
 		this.adminAuthService
 	);
+	static hashPassword = this.adminAuthService.hashPassword.bind(
+		this.adminAuthService
+	);
 }
