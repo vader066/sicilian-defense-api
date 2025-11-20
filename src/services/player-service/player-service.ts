@@ -46,15 +46,6 @@ export class PlayerService {
 		}
 	}
 
-	// async GetPlayerByUsername(username: string): Promise<PLAYER> {
-	// 	if (username === "") {
-	// 		throw new Error("Username must be provided");
-	// 	}
-	// 	const player = await this.playerRepository.getPlayerByUsername(username);
-
-	// 	return player;
-	// }
-
 	async GetClubPlayers(id: string): Promise<PLAYER[]> {
 		try {
 			if (id === "") {
@@ -78,5 +69,18 @@ export class PlayerService {
 			error.message = `Error Updating player: ${error.message}`;
 			throw error;
 		}
+	}
+
+	async createPlayerList(players: PLAYER[]): Promise<number> {
+		//check if club exists
+		const clubId = players[0].club_id;
+		const club = await ClubClient.getClubByID(clubId);
+		if (!club) {
+			throw new Error(`Club with ID ${clubId} does not exist`);
+		}
+
+		//add players
+		const rowsModified = await this.playerRepository.addBulkPlayers(players);
+		return rowsModified;
 	}
 }

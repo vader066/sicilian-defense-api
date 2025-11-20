@@ -10,6 +10,7 @@ import {
 	UpdatePlayerReqSchema,
 } from "@/types/player";
 import { randomUUID } from "node:crypto";
+import z from "zod";
 
 // Use arrow functions for the methods to automatically bind this
 
@@ -36,7 +37,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			const result = await this.playerService.GetClubPlayers(clubId);
 			res.status(200).json({ message: "success", data: result, status: 200 });
 		} catch (error: any) {
-			const status = error.code || 500;
+			const status = this.errorStatus(error);
 			res
 				.status(status)
 				.json({ message: error.message, data: null, status: status });
@@ -59,7 +60,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			}
 			res.status(200).json({ message: "success", data: result, status: 200 });
 		} catch (error: any) {
-			const status = error.code || 500;
+			const status = this.errorStatus(error);
 			res
 				.status(status)
 				.json({ message: error.message, data: null, status: status });
@@ -99,9 +100,9 @@ export class PlayerServiceHandler extends BaseHandler {
 				.status(200)
 				.json({ message: "success", data: updatedPlayer, status: 200 });
 		} catch (error: any) {
-			const status = error.code || 500;
+			const status = this.errorStatus(error);
 			res
-				.status(500)
+				.status(status)
 				.json({ message: error.message, data: null, status: status });
 		}
 	};
@@ -123,7 +124,40 @@ export class PlayerServiceHandler extends BaseHandler {
 			const result = await this.playerService.CreatePlayer(player);
 			res.status(200).json({ message: "success", data: result, status: 200 });
 		} catch (error: any) {
-			const status = error.code || 500;
+			const status = this.errorStatus(error);
+			res
+				.status(status)
+				.json({ message: error.message, data: null, status: status });
+		}
+	};
+
+	createPlayersHandler = async (req: Request, res: Response) => {
+		try {
+			// authenticate user
+			const userId = this.authenticate(req);
+
+			// validate request body
+			const schemaArray = z.array(CreatePlayerReqSchema);
+			const body = this.validate<CreatePlayerReq[]>(req, schemaArray);
+
+			// get admin to obtain club id
+			const admin = await AdminClient.getAdminByID(userId);
+			const clubId = admin.club_id;
+
+			// create player for admins club
+			// deliberately using empty strings for id as final query will generate ids
+			const players: PLAYER[] = body.map((player) => {
+				return { ...player, club_id: clubId, id: "" };
+			});
+
+			const result = await this.playerService.createPlayerList(players);
+			res.status(200).json({
+				message: "success",
+				data: { players_added: result, players_requested: body.length },
+				status: 200,
+			});
+		} catch (error: any) {
+			const status = this.errorStatus(error);
 			res
 				.status(status)
 				.json({ message: error.message, data: null, status: status });

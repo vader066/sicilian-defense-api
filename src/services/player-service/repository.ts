@@ -93,6 +93,58 @@ export class PlayerRepository {
 		const updatedPlayer = result.rows[0];
 		return updatedPlayer;
 	}
+
+	async addBulkPlayers(players: PLAYER[]): Promise<number> {
+		const values: any[] = [];
+
+		const placeholders = players
+			.map((p, idx) => {
+				const base = idx * 7; // number of fields per player
+				values.push(
+					p.first_name,
+					p.last_name,
+					p.sex,
+					p.date_of_birth,
+					p.programme,
+					p.username,
+					p.club_id
+				);
+
+				return `(
+        gen_random_uuid(),
+        $${base + 1},  -- first_name
+        $${base + 2},  -- last_name
+        $${base + 3},  -- sex
+        $${base + 4},  -- date_of_birth
+        $${base + 5},  -- programme
+        $${base + 6},  -- username
+        NOW(),
+        NOW(),
+        $${base + 7}   -- club_id
+      )`;
+			})
+			.join(",\n");
+
+		const query = `
+    INSERT INTO players
+    (id, first_name, last_name, sex, date_of_birth, programme, username, created_at, updated_at, club_id)
+    VALUES
+    ${placeholders}
+    RETURNING id;
+  `;
+
+		const result = await pool.query(query, values);
+		const insertCount = result.rowCount;
+		if (!insertCount) {
+			const error = new Error(
+				"Operation unsuccessfull. Add Bulk Players returned count null"
+			);
+			(error as any).code = 500;
+			throw error;
+		}
+
+		return insertCount;
+	}
 }
 
 // export async function getTournamentPlayers(tournamentId: string): Promise<PLAYER[]> {

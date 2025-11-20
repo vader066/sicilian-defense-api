@@ -23,13 +23,14 @@ router.route("/club/:clubId/players").get(playerHandler.getClubPlayersHandler);
 router.route("/players/:playerId").get(playerHandler.getPlayerHandler);
 router.route("/players/").post(playerHandler.createPlayerHandler);
 router.route("/players/:playerId").put(playerHandler.updatePlayerHandler);
-// router.route("/players/populate").post(addBulkPlayers);
+router.route("/players/populate").post(playerHandler.createPlayersHandler);
 // router.route("/players/:id").delete(deletePlayer); If we delete a player what happens to the games he has played? what happens to the tournaments and the ratings?
 
 // admin routes
 // - public
 router.route("/admin/sign-up").post(clubHandler.createClubAccount);
 router.route("/admin/login").post(adminAuthHandler.Login);
+// router.route("/admin/refresh").post(adminAuthHandler.Login);
 
 // tournament routes
 // router.route("/tournaments").get(getAllTournaments);
