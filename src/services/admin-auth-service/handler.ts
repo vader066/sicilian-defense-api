@@ -14,8 +14,8 @@ export class AdminAuthHandler extends BaseHandler {
 	private adminAuthService = new AdminAuthService();
 
 	Login = async (req: Request, res: Response) => {
-		const body = this.validate<AdminLoginReq>(req, AdminLoginReqSchema);
 		try {
+			const body = this.validate<AdminLoginReq>(req, AdminLoginReqSchema);
 			const result = await this.adminAuthService.LoginAdmin(
 				body.email,
 				body.password
@@ -30,8 +30,8 @@ export class AdminAuthHandler extends BaseHandler {
 	};
 
 	Refresh = async (req: Request, res: Response) => {
-		const body = this.validate<RefreshReq>(req, refreshReqSchema);
 		try {
+			const body = this.validate<RefreshReq>(req, refreshReqSchema);
 			const result = await this.adminAuthService.refreshAccessToken(
 				body.refresh_token
 			);
