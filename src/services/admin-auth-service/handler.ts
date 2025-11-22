@@ -29,6 +29,44 @@ export class AdminAuthHandler extends BaseHandler {
 		}
 	};
 
+	Logout = async (req: Request, res: Response) => {
+		try {
+			const body = this.validate<RefreshReq>(req, refreshReqSchema);
+			const revokedAt = await this.adminAuthService.LogoutAdmin(
+				body.refresh_token
+			);
+			res.status(200).json({
+				message: "success",
+				data: { revoked_at: revokedAt.toISOString() },
+				status: 200,
+			});
+		} catch (error: any) {
+			const status = this.errorStatus(error);
+			res
+				.status(status)
+				.json({ message: error.message, data: null, status: status });
+		}
+	};
+
+	LogoutAllSessions = async (req: Request, res: Response) => {
+		try {
+			const body = this.validate<RefreshReq>(req, refreshReqSchema);
+			const revokedAt = await this.adminAuthService.LogoutAdminSessions(
+				body.refresh_token
+			);
+			res.status(200).json({
+				message: "success",
+				data: { revoked_at: revokedAt.toISOString() },
+				status: 200,
+			});
+		} catch (error: any) {
+			const status = this.errorStatus(error);
+			res
+				.status(status)
+				.json({ message: error.message, data: null, status: status });
+		}
+	};
+
 	Refresh = async (req: Request, res: Response) => {
 		try {
 			const body = this.validate<RefreshReq>(req, refreshReqSchema);

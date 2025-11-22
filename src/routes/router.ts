@@ -30,6 +30,8 @@ router.route("/players/populate").post(playerHandler.createPlayersHandler);
 // - public
 router.route("/admin/sign-up").post(clubHandler.createClubAccount);
 router.route("/admin/login").post(adminAuthHandler.Login);
+router.route("/admin/logout").post(adminAuthHandler.Logout);
+router.route("/admin/logout/all").post(adminAuthHandler.LogoutAllSessions);
 router.route("/admin/refresh").post(adminAuthHandler.Refresh);
 
 // tournament routes
