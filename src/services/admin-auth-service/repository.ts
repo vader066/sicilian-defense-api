@@ -1,5 +1,5 @@
 import { pool } from "@/db/db";
-import { ADMINAUTH } from "@/types/database/models";
+import { ADMINAUTH, REFRESHSESSION } from "@/types/database/models";
 
 export class AdminAuthRepository {
 	async createAdminAuth(adminAuth: ADMINAUTH) {
@@ -26,6 +26,52 @@ export class AdminAuthRepository {
 			return result.rows[0];
 		} catch (error: any) {
 			throw new Error(`getAdminAuth: ${error.message}`);
+		}
+	}
+
+	async addRefreshSession(session: REFRESHSESSION): Promise<REFRESHSESSION> {
+		try {
+			const query = `
+        INSERT INTO refresh_sessions (id, user_id, user_type, token_hash, expires_at, created_at, updated_at) 
+        VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+        RETURNING *; 
+      `;
+			const result = await pool.query<REFRESHSESSION>(query, [
+				session.id,
+				session.user_id,
+				session.user_type,
+				session.token_hash,
+				session.expires_at,
+			]);
+			return result.rows[0];
+		} catch (error: any) {
+			throw new Error(`addRefreshSession: ${error.message}`);
+		}
+	}
+
+	async getRefreshSession(tokenId: string): Promise<REFRESHSESSION | null> {
+		try {
+			const query = `
+        SELECT * FROM refresh_sessions WHERE id = $1;
+      `;
+			const result = await pool.query<REFRESHSESSION>(query, [tokenId]);
+			if (result.rows.length === 0) {
+				return null;
+			}
+			return result.rows[0];
+		} catch (error: any) {
+			throw new Error(`getRefreshSession: ${error.message}`);
+		}
+	}
+
+	async deleteRefreshSession(tokenId: string): Promise<void> {
+		try {
+			const query = `
+      DELETE FROM refresh_sessions WHERE id = $1;
+    `;
+			await pool.query(query, [tokenId]);
+		} catch (error: any) {
+			throw new Error(`deleteRefreshSession: ${error.message}`);
 		}
 	}
 }

@@ -24,6 +24,17 @@ export interface ADMINAUTH {
 	password_hash: string;
 }
 
+export interface REFRESHSESSION {
+  id: string;
+  user_id: string;
+  user_type: "ADMIN" | "PLAYER";
+  token_hash: string;
+  expires_at: string;
+  revoked_at?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface GAMES {
 	gameId: string;
 	black: string;

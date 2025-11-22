@@ -1,9 +1,9 @@
-import { ADMIN, ADMINAUTH } from "@/types/database/models";
+import { ADMIN, ADMINAUTH, REFRESHSESSION } from "@/types/database/models";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { AdminAuthRepository } from "./repository";
 import { AdminClient } from "./client/admin-management";
-import { randomUUID } from "crypto";
+import { randomUUID, createHash } from "crypto";
 import env from "@/env";
 
 export interface RefreshToken extends jwt.JwtPayload {}
@@ -15,6 +15,10 @@ export class AdminAuthService {
 		const saltRounds = 12;
 		const hashed = await bcrypt.hash(password, saltRounds);
 		return hashed;
+	}
+
+	hashToken(token: string): string {
+		return createHash("sha256").update(token).digest("hex");
 	}
 
 	async verifyPassword(password: string, hash: string): Promise<boolean> {
@@ -43,37 +47,145 @@ export class AdminAuthService {
 	async LoginAdmin(email: string, password: string): Promise<LoginResponse> {
 		// get adminId
 		const admin = await AdminClient.getAdminByEmail(email);
+		const adminId = admin.id;
 
 		// verify credentials
-		const isValid = await this.verifyAdminCredentials(admin.id, password);
+		const isValid = await this.verifyAdminCredentials(adminId, password);
 		if (!isValid) {
 			throw new Error("Invalid credentials");
 		}
+
+		// generate access and refresh tokens
+		const jti = randomUUID();
+		const accessToken = this.generateAccessToken(adminId, "ADMIN", admin.email);
+		const refreshToken = this.generateRefreshToken(
+			jti,
+			adminId,
+			"ADMIN",
+			admin.email
+		);
+
+		// store refresh token in DB
+		const hashedToken = this.hashToken(refreshToken);
+		const session: REFRESHSESSION = {
+			id: jti,
+			user_id: adminId,
+			user_type: "ADMIN",
+			token_hash: hashedToken,
+			expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+		};
+		await this.adminAuthRepository.addRefreshSession(session);
+		return { accessToken, refreshToken, admin };
+	}
+
+	async refreshAccessToken(
+		refreshToken: string
+	): Promise<{ accessToken: string; refreshToken: string }> {
+		try {
+			const decoded = jwt.decode(refreshToken) as RefreshTokenPayload;
+			if (!decoded || decoded.type !== "refresh") {
+				throw new Error("Invalid refresh token payload");
+			}
+
+			const tokenId = decoded.jti!;
+			const adminId = decoded.sub!;
+			const adminEmail = decoded.email;
+
+			// Retrieve the refresh session from the database
+			const session = await this.adminAuthRepository.getRefreshSession(tokenId);
+
+			// validate session
+			if (!session) {
+				throw new Error("Refresh session expired or not found");
+			}
+
+			if (session.revoked_at) {
+				throw new Error("Refresh token has been revoked");
+			}
+
+			if (new Date(session.expires_at) < new Date()) {
+				throw new Error("Token expired");
+			}
+
+			if (this.hashToken(refreshToken) !== session.token_hash) {
+				throw new Error("Token hash mismatch");
+			}
+
+			// generate new access and refresh tokens
+			const newTokenId = randomUUID();
+			const accessToken = this.generateAccessToken(
+				adminId,
+				"ADMIN",
+				adminEmail
+			);
+			const newRefreshToken = this.generateRefreshToken(
+				newTokenId,
+				adminId,
+				"ADMIN",
+				adminEmail
+			);
+
+			// store new refresh token in DB
+			const hashedToken = this.hashToken(newRefreshToken);
+			const newSession: REFRESHSESSION = {
+				id: newTokenId,
+				user_id: adminId,
+				user_type: "ADMIN",
+				token_hash: hashedToken,
+				expires_at: new Date(
+					Date.now() + 30 * 24 * 60 * 60 * 1000
+				).toISOString(), // 30 days from now
+			};
+			await this.adminAuthRepository.addRefreshSession(newSession);
+
+			// revoke old refresh token
+			await this.adminAuthRepository.deleteRefreshSession(tokenId);
+
+			return { accessToken, refreshToken: newRefreshToken };
+		} catch (error) {
+			throw new Error(`refreshAccessToken: ${error}`);
+		}
+	}
+
+	generateAccessToken(
+		sub: string,
+		role: "ADMIN" | "PLAYER",
+		email: string,
+		expiresIn?: number
+	): string {
 		const accessToken = jwt.sign(
 			{
-				sub: admin.id,
-				role: "admin",
-				email: admin.email,
+				sub: sub,
+				role: role,
+				email: email,
 			},
 			env.accessJwtSecret,
-			{ expiresIn: 300 }
+			{ expiresIn: expiresIn ?? 300 }
 		);
-		const jti = randomUUID();
+		return accessToken;
+	}
+
+	generateRefreshToken(
+		jti: string,
+		sub: string,
+		role: "ADMIN" | "PLAYER",
+		email: string,
+		expiresIn?: any
+	): string {
 		const refreshToken = jwt.sign(
 			{
-				sub: admin.id,
-				role: "admin",
-				email: admin.email,
+				sub: sub,
+				role: role,
+				email: email,
+				type: "refresh",
 			},
 			env.refreshJwtSecret,
 			{
 				jwtid: jti,
-				expiresIn: "30d",
+				expiresIn: expiresIn ?? "30d",
 			}
 		);
-
-		// store refresh token in DB or cache (not implemented here)
-		return { accessToken, refreshToken, admin };
+		return refreshToken;
 	}
 }
 
@@ -81,4 +193,10 @@ export interface LoginResponse {
 	accessToken: string;
 	refreshToken: string;
 	admin: ADMIN;
+}
+
+export interface RefreshTokenPayload extends jwt.JwtPayload {
+	type: "refresh";
+	role: "ADMIN" | "PLAYER";
+	email: string;
 }
