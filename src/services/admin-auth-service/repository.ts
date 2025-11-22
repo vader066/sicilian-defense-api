@@ -74,4 +74,28 @@ export class AdminAuthRepository {
 			throw new Error(`deleteRefreshSession: ${error.message}`);
 		}
 	}
+
+	async deleteAllUserSessions(userId: string): Promise<void> {
+		try {
+			const query = `
+      DELETE FROM refresh_sessions WHERE user_id = $1;
+    `;
+			await pool.query(query, [userId]);
+		} catch (error: any) {
+			throw new Error(`deleteAllUserSessions: ${error.message}`);
+		}
+	}
+
+	async revokeRefreshSession(tokenId: string): Promise<void> {
+		try {
+			const query = `
+      UPDATE refresh_sessions 
+      SET revoked_at = NOW()
+      WHERE id = $1;
+    `;
+			await pool.query(query, [tokenId]);
+		} catch (error: any) {
+			throw new Error(`revokeRefreshSession: ${error.message}`);
+		}
+	}
 }

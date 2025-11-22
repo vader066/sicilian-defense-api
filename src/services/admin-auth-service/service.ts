@@ -78,6 +78,48 @@ export class AdminAuthService {
 		return { accessToken, refreshToken, admin };
 	}
 
+	async LogoutAdmin(refreshToken: string): Promise<Date> {
+		try {
+			const decoded = jwt.decode(refreshToken) as RefreshTokenPayload;
+			if (!decoded || decoded.type !== "refresh") {
+				throw new Error("Invalid refresh token payload");
+			}
+			if (!decoded.jti) throw new Error("Refresh token missing ID");
+			const tokenId = decoded.jti;
+
+			jwt.verify(refreshToken, env.refreshJwtSecret);
+
+			// Revoke the refresh session in the database
+			await this.adminAuthRepository.revokeRefreshSession(tokenId);
+			const revokedAt = new Date();
+
+			return revokedAt;
+		} catch (error) {
+			throw new Error(`refreshAccessToken: ${error}`);
+		}
+	}
+
+	async LogoutAdminSessions(refreshToken: string): Promise<Date> {
+		try {
+			const decoded = jwt.decode(refreshToken) as RefreshTokenPayload;
+			if (!decoded || decoded.type !== "refresh") {
+				throw new Error("Invalid refresh token payload");
+			}
+			if (!decoded.sub) throw new Error("Refresh token missing adminID");
+			const adminId = decoded.sub;
+
+			jwt.verify(refreshToken, env.refreshJwtSecret);
+
+			// Revoke all the refresh session in the database
+			await this.adminAuthRepository.deleteAllUserSessions(adminId);
+			const revokedAt = new Date();
+
+			return revokedAt;
+		} catch (error) {
+			throw new Error(`refreshAccessToken: ${error}`);
+		}
+	}
+
 	async refreshAccessToken(
 		refreshToken: string
 	): Promise<{ accessToken: string; refreshToken: string }> {
@@ -86,9 +128,11 @@ export class AdminAuthService {
 			if (!decoded || decoded.type !== "refresh") {
 				throw new Error("Invalid refresh token payload");
 			}
+			if (!decoded.jti) throw new Error("Refresh token missing ID");
+			if (!decoded.sub) throw new Error("User ID missing in token");
 
-			const tokenId = decoded.jti!;
-			const adminId = decoded.sub!;
+			const tokenId = decoded.jti;
+			const adminId = decoded.sub;
 			const adminEmail = decoded.email;
 
 			// Retrieve the refresh session from the database
@@ -139,7 +183,7 @@ export class AdminAuthService {
 			await this.adminAuthRepository.addRefreshSession(newSession);
 
 			// revoke old refresh token
-			await this.adminAuthRepository.deleteRefreshSession(tokenId);
+			await this.adminAuthRepository.revokeRefreshSession(tokenId);
 
 			return { accessToken, refreshToken: newRefreshToken };
 		} catch (error) {
