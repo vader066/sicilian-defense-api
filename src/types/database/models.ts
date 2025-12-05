@@ -24,15 +24,50 @@ export interface ADMINAUTH {
 	password_hash: string;
 }
 
+export interface PLAYER {
+	id: string;
+	club_id: string;
+	first_name: string;
+	last_name: string;
+	programme: string;
+	username: string;
+	date_of_birth: string;
+	sex: "MALE" | "FEMALE";
+	created_at?: string;
+	updated_at?: string;
+}
+
 export interface REFRESHSESSION {
-  id: string;
-  user_id: string;
-  user_type: "ADMIN" | "PLAYER";
-  token_hash: string;
-  expires_at: string;
-  revoked_at?: string;
-  created_at?: string;
-  updated_at?: string;
+	id: string;
+	user_id: string;
+	user_type: "ADMIN" | "PLAYER";
+	token_hash: string;
+	expires_at: string;
+	revoked_at?: string;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface GAME {
+	game_id: string;
+	white: string;
+	black: string;
+	winner: string;
+	black_rating: number;
+	white_rating: number;
+	played_at: string;
+	tournament_id: string;
+	draw: boolean;
+	forfeit: "BF" | "WF" | "FF";
+}
+
+export interface DBTourney {
+	id: string;
+	tournament_name: string;
+	number_of_players: number;
+	synced: boolean;
+	club_id: string;
+	began_at?: string;
 }
 
 export interface GAMES {
@@ -49,31 +84,20 @@ export interface GAMES {
 }
 
 export interface TOURNAMENT {
-	docId?: string; // Hyphenated tournament ID value
-	tournamentId: string;
-	games: Array<GAMES>;
-	players: Array<string>;
+	id: string;
+	tournamentName: string;
+	games: Array<GAME>;
+	playerIDs: Array<string>; // player id's
+	dbPlayers?: Array<PLAYER>; // don't use for now
 	synced?: boolean;
-	club?: string;
+	clubId: string;
+	beganAt: Date;
 }
 
 export type ratingUpdate = {
 	username: string;
 	newRating: number;
 };
-
-export interface PLAYER {
-	id: string;
-	club_id: string;
-	first_name: string;
-	last_name: string;
-	programme: string;
-	username: string;
-	date_of_birth: string;
-	sex: "MALE" | "FEMALE";
-	created_at?: string;
-	updated_at?: string;
-}
 
 export interface APPWRITE_TOURNAMENT {
 	total: number;

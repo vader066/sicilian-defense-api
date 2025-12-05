@@ -2,13 +2,17 @@ import { ADMIN, ADMINAUTH, CLUB } from "@/types/database/models";
 import { ClubRepository } from "./repository";
 import { randomUUID } from "node:crypto";
 import { CREATEACCOUNTREQ } from "@/types/club";
-import { AdminClient } from "./client/admin-management";
-import { AdminAuthClient } from "./client/admin-auth";
+import { AdminAuthService } from "../admin-auth-service/service";
+import { AdminManagementService } from "../admin-management-service/service";
 
 interface CREATEACCOUNTRES extends ADMIN, CLUB {}
 
 export class ClubService {
 	private clubRepository = new ClubRepository();
+
+	private adminAuthClient = new AdminAuthService();
+	private adminClient = new AdminManagementService();
+
 	async createAccount(req: CREATEACCOUNTREQ): Promise<CREATEACCOUNTRES> {
 		// create club
 		const clubID = randomUUID();
@@ -30,15 +34,17 @@ export class ClubService {
 			club_id: clubID,
 			creator: true,
 		};
-		await AdminClient.createAdminUser(admin);
+		await this.adminClient.createAdminUser(admin);
 
 		// create admin auth
-		const hashedPassword = await AdminAuthClient.hashPassword(req.password);
+		const hashedPassword = await this.adminAuthClient.hashPassword(
+			req.password
+		);
 		const adminAuth: ADMINAUTH = {
 			admin_id: admin.id,
 			password_hash: hashedPassword,
 		};
-		await AdminAuthClient.createAdminAuth(adminAuth);
+		await this.adminAuthClient.createAdminAuth(adminAuth);
 
 		// response
 		return {

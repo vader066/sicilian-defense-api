@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { PlayerService } from "./player-service";
 import { BaseHandler } from "@/shared/handler";
-import { AdminClient } from "./client/admin-management";
 import { PLAYER } from "@/types/database/models";
 import {
 	CreatePlayerReq,
@@ -11,11 +10,13 @@ import {
 } from "@/types/player";
 import { randomUUID } from "node:crypto";
 import z from "zod";
+import { AdminManagementService } from "../admin-management-service/service";
 
 // Use arrow functions for the methods to automatically bind this
 
 export class PlayerServiceHandler extends BaseHandler {
 	private playerService = new PlayerService();
+	private adminClient = new AdminManagementService();
 
 	// const body = this.validate<CREATEACCOUNTREQ>(req, Crthis.playerService.eateAccountReqSchema);
 	getClubPlayersHandler = async (req: Request, res: Response) => {
@@ -24,7 +25,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			const clubId = req.params.clubId;
 
 			// check if player is club admin
-			const admin = await AdminClient.getAdminByID(userId);
+			const admin = await this.adminClient.getAdminByID(userId);
 			if (admin.club_id != clubId) {
 				res.status(403).json({
 					message: `This user is not an admin for club or club does not exist`,
@@ -47,7 +48,7 @@ export class PlayerServiceHandler extends BaseHandler {
 	getPlayerHandler = async (req: Request, res: Response) => {
 		try {
 			const userId = this.authenticate(req);
-			const admin = await AdminClient.getAdminByID(userId);
+			const admin = await this.adminClient.getAdminByID(userId);
 			const result = await this.playerService.GetPlayerByID(
 				req.params.playerId
 			);
@@ -76,7 +77,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			const body = this.validate<UpdatePlayerReq>(req, UpdatePlayerReqSchema);
 
 			// Admin authorization - verify player and admin belong to the same club
-			const admin = await AdminClient.getAdminByID(userId);
+			const admin = await this.adminClient.getAdminByID(userId);
 			const player = await this.playerService.GetPlayerByID(
 				req.params.playerId
 			);
@@ -116,7 +117,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			const body = this.validate<CreatePlayerReq>(req, CreatePlayerReqSchema);
 
 			// get admin to obtain club id
-			const admin = await AdminClient.getAdminByID(userId);
+			const admin = await this.adminClient.getAdminByID(userId);
 			const playerID = randomUUID();
 
 			// create player
@@ -141,7 +142,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			const body = this.validate<CreatePlayerReq[]>(req, schemaArray);
 
 			// get admin to obtain club id
-			const admin = await AdminClient.getAdminByID(userId);
+			const admin = await this.adminClient.getAdminByID(userId);
 			const clubId = admin.club_id;
 
 			// create player for admins club

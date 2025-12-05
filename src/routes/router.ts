@@ -1,6 +1,7 @@
 import { AdminAuthHandler } from "@/services/admin-auth-service/handler";
 import { ClubServiceHandler } from "@/services/club-service/handler";
 import { PlayerServiceHandler } from "@/services/player-service/handler";
+import { TournamentServiceHandler } from "@/services/tournament-service/handler";
 import { Router } from "express";
 
 const router = Router();
@@ -17,6 +18,7 @@ router.route("/health").get((_, res) => {
 const clubHandler = new ClubServiceHandler();
 const playerHandler = new PlayerServiceHandler();
 const adminAuthHandler = new AdminAuthHandler();
+const tourneyHandler = new TournamentServiceHandler();
 
 // player routes
 router.route("/club/:clubId/players").get(playerHandler.getClubPlayersHandler);
@@ -35,8 +37,10 @@ router.route("/admin/logout/all").post(adminAuthHandler.LogoutAllSessions);
 router.route("/admin/refresh").post(adminAuthHandler.Refresh);
 
 // tournament routes
-// router.route("/tournaments").get(getAllTournaments);
-// router.route("/tournaments").post(addTournament);
+router
+	.route("/tournaments/:tourneyId")
+	.get(tourneyHandler.getTournamentWithGamesHandler);
+router.route("/tournaments").post(tourneyHandler.addTournamentWithGamesHandler);
 // router.route("/sync-tournament/:id").patch(syncTournament);
 // router.route("/lichess-tournament/:id").get(getLichessArenaTournament);
 

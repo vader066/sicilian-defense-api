@@ -1,9 +1,10 @@
 import { PLAYER } from "@/types/database/models";
 import { PlayerRepository } from "./repository";
-import { ClubClient } from "./client/club";
+import { ClubService } from "../club-service/service";
 
 export class PlayerService {
 	private playerRepository = new PlayerRepository();
+	private clubClient = new ClubService();
 
 	async CreatePlayer(player: PLAYER): Promise<PLAYER> {
 		// check if player with same username and id already exists
@@ -19,7 +20,7 @@ export class PlayerService {
 		}
 
 		//check if club exists
-		const club = await ClubClient.getClubByID(player.club_id);
+		const club = await this.clubClient.getClubByID(player.club_id);
 		if (!club) {
 			throw new Error(`Club with ID ${player.club_id} does not exist`);
 		}
@@ -74,7 +75,7 @@ export class PlayerService {
 	async createPlayerList(players: PLAYER[]): Promise<number> {
 		//check if club exists
 		const clubId = players[0].club_id;
-		const club = await ClubClient.getClubByID(clubId);
+		const club = await this.clubClient.getClubByID(clubId);
 		if (!club) {
 			throw new Error(`Club with ID ${clubId} does not exist`);
 		}

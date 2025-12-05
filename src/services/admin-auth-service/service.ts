@@ -2,14 +2,16 @@ import { ADMIN, ADMINAUTH, REFRESHSESSION } from "@/types/database/models";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { AdminAuthRepository } from "./repository";
-import { AdminClient } from "./client/admin-management";
 import { randomUUID, createHash } from "crypto";
 import env from "@/env";
+import { AdminManagementService } from "../admin-management-service/service";
 
 export interface RefreshToken extends jwt.JwtPayload {}
 
 export class AdminAuthService {
 	private adminAuthRepository = new AdminAuthRepository();
+
+	private adminClient = new AdminManagementService();
 
 	async hashPassword(password: string): Promise<string> {
 		const saltRounds = 12;
@@ -46,7 +48,7 @@ export class AdminAuthService {
 
 	async LoginAdmin(email: string, password: string): Promise<LoginResponse> {
 		// get adminId
-		const admin = await AdminClient.getAdminByEmail(email);
+		const admin = await this.adminClient.getAdminByEmail(email);
 		const adminId = admin.id;
 
 		// verify credentials
