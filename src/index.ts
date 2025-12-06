@@ -1,6 +1,7 @@
 import "module-alias/register";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import env from "./env";
 import router from "./routes/router";
 
@@ -22,6 +23,7 @@ app.use(
 	})
 );
 app.use(express.json());
+app.use(cookieParser());
 app.use("/api", router);
 
 app.listen(port, "0.0.0.0", () => {

@@ -20,7 +20,16 @@ export class AdminAuthHandler extends BaseHandler {
 				body.email,
 				body.password
 			);
-			res.status(200).json({ message: "success", data: result, status: 200 });
+			res.cookie("refresh_token", result.refreshToken, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
+				sameSite: "strict",
+				path: "/",
+				maxAge: 1000 * 60 * 60 * 24 * 7,
+			});
+
+			const payload = { access_token: result.accessToken };
+			res.status(200).json({ message: "success", data: payload, status: 200 });
 		} catch (error: any) {
 			const status = this.errorStatus(error);
 			res
@@ -35,6 +44,13 @@ export class AdminAuthHandler extends BaseHandler {
 			const revokedAt = await this.adminAuthService.LogoutAdmin(
 				body.refresh_token
 			);
+			res.cookie("refresh_token", "", {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
+				sameSite: "strict",
+				path: "/",
+				maxAge: 0,
+			});
 			res.status(200).json({
 				message: "success",
 				data: { revoked_at: revokedAt.toISOString() },
@@ -54,6 +70,13 @@ export class AdminAuthHandler extends BaseHandler {
 			const revokedAt = await this.adminAuthService.LogoutAdminSessions(
 				body.refresh_token
 			);
+			res.cookie("refresh_token", "", {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
+				sameSite: "strict",
+				path: "/",
+				maxAge: 0, // delete cookie
+			});
 			res.status(200).json({
 				message: "success",
 				data: { revoked_at: revokedAt.toISOString() },
@@ -69,11 +92,27 @@ export class AdminAuthHandler extends BaseHandler {
 
 	Refresh = async (req: Request, res: Response) => {
 		try {
-			const body = this.validate<RefreshReq>(req, refreshReqSchema);
+			const refreshToken = req.cookies?.refresh_token;
+			if (!refreshToken) {
+				return res.status(401).json({
+					message: "Missing refresh token",
+					data: null,
+					status: 401,
+				});
+			}
 			const result = await this.adminAuthService.refreshAccessToken(
-				body.refresh_token
+				refreshToken
 			);
-			res.status(200).json({ message: "success", data: result, status: 200 });
+			const payload = { access_token: result.accessToken };
+			res.cookie("refresh_token", result.refreshToken, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
+				sameSite: "strict",
+				path: "/",
+				maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days or whatever you choose
+			});
+
+			res.status(200).json({ message: "success", data: payload, status: 200 });
 		} catch (error: any) {
 			const status = this.errorStatus(error);
 			res

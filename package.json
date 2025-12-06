@@ -18,6 +18,7 @@
 		"@types/node": "^22.15.3",
 		"bcrypt": "^6.0.0",
 		"concurrently": "^9.1.2",
+		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
 		"dotenv": "^16.5.0",
 		"express": "^5.1.0",
@@ -33,6 +34,7 @@
 	},
 	"devDependencies": {
 		"@types/bcrypt": "^6.0.0",
+		"@types/cookie-parser": "^1.4.10",
 		"@types/cors": "^2.8.18",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/module-alias": "^2.0.4",
