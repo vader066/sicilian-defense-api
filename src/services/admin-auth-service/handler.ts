@@ -7,11 +7,13 @@ import {
 	RefreshReq,
 	refreshReqSchema,
 } from "@/types/admin-auth";
+import { ClubService } from "../club-service/service";
 
 // Use arrow functions for the methods to automatically bind this
 
 export class AdminAuthHandler extends BaseHandler {
 	private adminAuthService = new AdminAuthService();
+	private clubClient = new ClubService();
 
 	Login = async (req: Request, res: Response) => {
 		try {
@@ -20,15 +22,26 @@ export class AdminAuthHandler extends BaseHandler {
 				body.email,
 				body.password
 			);
+
+			const club = await this.clubClient.getClubByID(result.admin.club_id);
+			if (!club) {
+				throw new Error(
+					`Could not find admin's club: ${result.admin.club_id} `
+				);
+			}
+
 			res.cookie("refresh_token", result.refreshToken, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === "production",
 				sameSite: "strict",
 				path: "/",
-				maxAge: 1000 * 60 * 60 * 24 * 7,
 			});
 
-			const payload = { access_token: result.accessToken };
+			const payload = {
+				access_token: result.accessToken,
+				user: result.admin,
+				club,
+			};
 			res.status(200).json({ message: "success", data: payload, status: 200 });
 		} catch (error: any) {
 			const status = this.errorStatus(error);
@@ -94,11 +107,9 @@ export class AdminAuthHandler extends BaseHandler {
 		try {
 			const refreshToken = req.cookies?.refresh_token;
 			if (!refreshToken) {
-				return res.status(401).json({
-					message: "Missing refresh token",
-					data: null,
-					status: 401,
-				});
+				const error = new Error("Missing refresh token cookie");
+				error.name = "AuthError";
+				throw error;
 			}
 			const result = await this.adminAuthService.refreshAccessToken(
 				refreshToken
@@ -109,7 +120,6 @@ export class AdminAuthHandler extends BaseHandler {
 				secure: process.env.NODE_ENV === "production",
 				sameSite: "strict",
 				path: "/",
-				maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days or whatever you choose
 			});
 
 			res.status(200).json({ message: "success", data: payload, status: 200 });

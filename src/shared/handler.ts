@@ -45,10 +45,13 @@ export class BaseHandler extends Validator {
 	}
 
 	protected errorStatus(error: any): number {
+		if (error.name === "AuthError") {
+			return 401;
+		}
 		const VALID_HTTP_CODES = new Set([
 			400, 401, 403, 404, 409, 422, 429, 500, 501, 502, 503, 504,
 		]);
-		const code = Number(error.code);
+		const code = Number(error?.status || error?.code || 500);
 		const status = VALID_HTTP_CODES.has(code) ? code : 500;
 		return status;
 	}

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { BaseHandler } from "@/shared/handler";
 import { AdminManagementService } from "../admin-management-service/service";
 import { TournamentService } from "./service";
-import { DBTourney, GAME, TOURNAMENT } from "@/types/database/models";
+import { DBTourney } from "@/types/database/models";
 import { randomUUID } from "node:crypto";
 import { GameService } from "../game-service/service";
 import { createTournamentReqSchema, tournamentReq } from "@/types/tournament";

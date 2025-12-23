@@ -9,11 +9,8 @@ export class AdminManagementService {
 		return admin;
 	}
 
-	async getAdminByEmail(email: string): Promise<ADMIN> {
+	async getAdminByEmail(email: string): Promise<ADMIN | null> {
 		const admin = await this.adminRepository.getAdminByEmail(email);
-		if (!admin) {
-			throw new Error("Admin not found");
-		}
 		return admin;
 	}
 

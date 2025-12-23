@@ -5,6 +5,7 @@ import { AdminAuthRepository } from "./repository";
 import { randomUUID, createHash } from "crypto";
 import env from "@/env";
 import { AdminManagementService } from "../admin-management-service/service";
+import { AuthError } from "@/types/admin-auth";
 
 export interface RefreshToken extends jwt.JwtPayload {}
 
@@ -35,26 +36,33 @@ export class AdminAuthService {
 		adminId: string,
 		password: string
 	): Promise<boolean> {
-		const adminAuth = await this.adminAuthRepository.getAdminAuth(adminId);
-		if (!adminAuth) {
-			throw new Error("Admin not found");
+		try {
+			const adminAuth = await this.adminAuthRepository.getAdminAuth(adminId);
+			if (!adminAuth) {
+				throw new AuthError("Admin not found", 401);
+			}
+			const isValid = await this.verifyPassword(
+				password,
+				adminAuth.password_hash
+			);
+			return isValid;
+		} catch (error: any) {
+			throw new AuthError(error.message, 401);
 		}
-		const isValid = await this.verifyPassword(
-			password,
-			adminAuth.password_hash
-		);
-		return isValid;
 	}
 
 	async LoginAdmin(email: string, password: string): Promise<LoginResponse> {
 		// get adminId
 		const admin = await this.adminClient.getAdminByEmail(email);
+		if (!admin) {
+			throw new AuthError(`Admin with email: ${email} not found`, 401);
+		}
 		const adminId = admin.id;
 
 		// verify credentials
 		const isValid = await this.verifyAdminCredentials(adminId, password);
 		if (!isValid) {
-			throw new Error("Invalid credentials");
+			throw new AuthError("Invalid Password", 401);
 		}
 
 		// generate access and refresh tokens
@@ -128,10 +136,10 @@ export class AdminAuthService {
 		try {
 			const decoded = jwt.decode(refreshToken) as RefreshTokenPayload;
 			if (!decoded || decoded.type !== "refresh") {
-				throw new Error("Invalid refresh token payload");
+				throw new AuthError("Invalid refresh token payload", 401);
 			}
-			if (!decoded.jti) throw new Error("Refresh token missing ID");
-			if (!decoded.sub) throw new Error("User ID missing in token");
+			if (!decoded.jti) throw new AuthError("Refresh token missing ID", 401);
+			if (!decoded.sub) throw new AuthError("User ID missing in token", 401);
 
 			const tokenId = decoded.jti;
 			const adminId = decoded.sub;
@@ -142,19 +150,19 @@ export class AdminAuthService {
 
 			// validate session
 			if (!session) {
-				throw new Error("Refresh session expired or not found");
+				throw new AuthError("Refresh session expired or not found", 401);
 			}
 
 			if (session.revoked_at) {
-				throw new Error("Refresh token has been revoked");
+				throw new AuthError("Refresh token has been revoked", 401);
 			}
 
 			if (new Date(session.expires_at) < new Date()) {
-				throw new Error("Token expired");
+				throw new AuthError("Token expired", 401);
 			}
 
 			if (this.hashToken(refreshToken) !== session.token_hash) {
-				throw new Error("Token hash mismatch");
+				throw new AuthError("Token hash mismatch", 401);
 			}
 
 			// generate new access and refresh tokens
@@ -189,7 +197,7 @@ export class AdminAuthService {
 
 			return { accessToken, refreshToken: newRefreshToken };
 		} catch (error) {
-			throw new Error(`refreshAccessToken: ${error}`);
+			throw new AuthError(`refreshAccessToken: ${error}`, 401);
 		}
 	}
 

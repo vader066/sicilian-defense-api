@@ -12,3 +12,15 @@ export const refreshReqSchema = z.object({
 });
 
 export type RefreshReq = z.infer<typeof refreshReqSchema>;
+
+export class AuthError extends Error {
+	status: number;
+	originalError?: unknown;
+
+	constructor(message: string, status: number = 400, originalError?: unknown) {
+		super(message);
+		this.name = "AuthError";
+		this.status = status;
+		this.originalError = originalError;
+	}
+}
