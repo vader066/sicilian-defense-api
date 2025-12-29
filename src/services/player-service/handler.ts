@@ -2,12 +2,7 @@ import { Request, Response } from "express";
 import { PlayerService } from "./player-service";
 import { BaseHandler } from "@/shared/handler";
 import { PLAYER } from "@/types/database/models";
-import {
-	CreatePlayerReq,
-	CreatePlayerReqSchema,
-	UpdatePlayerReq,
-	UpdatePlayerReqSchema,
-} from "@/types/player";
+import { PlayerReq, PlayerReqSchema } from "@/types/player";
 import { randomUUID } from "node:crypto";
 import z from "zod";
 import { AdminManagementService } from "../admin-management-service/service";
@@ -74,7 +69,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			const userId = this.authenticate(req);
 
 			// validate request body
-			const body = this.validate<UpdatePlayerReq>(req, UpdatePlayerReqSchema);
+			const body = this.validate<PlayerReq>(req, PlayerReqSchema);
 
 			// Admin authorization - verify player and admin belong to the same club
 			const admin = await this.adminClient.getAdminByID(userId);
@@ -114,7 +109,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			const userId = this.authenticate(req);
 
 			// validate request body
-			const body = this.validate<CreatePlayerReq>(req, CreatePlayerReqSchema);
+			const body = this.validate<PlayerReq>(req, PlayerReqSchema);
 
 			// get admin to obtain club id
 			const admin = await this.adminClient.getAdminByID(userId);
@@ -138,8 +133,8 @@ export class PlayerServiceHandler extends BaseHandler {
 			const userId = this.authenticate(req);
 
 			// validate request body
-			const schemaArray = z.array(CreatePlayerReqSchema);
-			const body = this.validate<CreatePlayerReq[]>(req, schemaArray);
+			const schemaArray = z.array(PlayerReqSchema);
+			const body = this.validate<PlayerReq[]>(req, schemaArray);
 
 			// get admin to obtain club id
 			const admin = await this.adminClient.getAdminByID(userId);

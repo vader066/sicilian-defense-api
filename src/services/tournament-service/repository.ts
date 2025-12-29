@@ -43,4 +43,27 @@ export class TourneyRepository {
 			);
 		}
 	}
+
+	async updateTournament(tournament: DBTourney): Promise<DBTourney> {
+		const query = `
+      UPDATE tournaments
+      SET club_id = $2,
+          tournament_name = $3,
+          synced = $4,
+          number_of_players = $5,
+          began_at = NOW()
+      WHERE id = $1
+      RETURNING *;
+      `;
+		const result = await pool.query<DBTourney>(query, [
+			tournament.id,
+			tournament.club_id,
+			tournament.tournament_name,
+			tournament.synced,
+			tournament.number_of_players,
+		]);
+
+		const updatedPlayer = result.rows[0];
+		return updatedPlayer;
+	}
 }

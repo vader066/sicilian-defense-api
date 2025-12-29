@@ -2,6 +2,7 @@ import { DBTourney, PLAYER, TOURNAMENT } from "@/types/database/models";
 import { TourneyRepository } from "./repository";
 import { GameService } from "../game-service/service";
 import { PlayerService } from "../player-service/player-service";
+import { syncTournReq } from "@/types/tournament";
 
 export class TournamentService {
 	private tournamentRepository = new TourneyRepository();
@@ -58,5 +59,49 @@ export class TournamentService {
 			error.message = `Error getting tournament with games: ${error.message}`;
 			throw error;
 		}
+	}
+
+	async ListClubTournaments(clubId: string): Promise<DBTourney[]> {
+		const tournaments = await this.tournamentRepository.getClubTournaments(
+			clubId
+		);
+		return tournaments;
+	}
+
+	async SyncTournament(
+		tournament: DBTourney,
+		syncReq: syncTournReq
+	): Promise<DBTourney> {
+		//get all club players
+		const players = await this.playerClient.GetClubPlayers(tournament.club_id);
+
+		// update synced value
+		tournament.synced = true;
+		const updatedTourney = await this.tournamentRepository.updateTournament(
+			tournament
+		);
+
+		// verify if updates contain unknown players and throw error
+		const playerIDs = players.map((p) => p.id);
+		const verify = syncReq.ratingUpdates.some((u) => {
+			const has = playerIDs.includes(u.playerId);
+			return !has;
+		});
+		if (!verify) {
+			throw Error(
+				"Player in updates request body did not match any player in the club's database"
+			);
+		}
+
+		// update player ratings
+		const promises: Promise<PLAYER>[] = [];
+		syncReq.ratingUpdates.forEach((update) => {
+			const player = players.find((p) => p.id === update.playerId);
+			player!.rating = update.newRating;
+			promises.push(this.playerClient.UpdatePlayer(player!));
+		});
+
+		await Promise.all(promises);
+		return updatedTourney;
 	}
 }

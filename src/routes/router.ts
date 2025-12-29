@@ -23,7 +23,7 @@ const tourneyHandler = new TournamentServiceHandler();
 // player routes
 router.route("/club/:clubId/players").get(playerHandler.getClubPlayersHandler);
 router.route("/players/:playerId").get(playerHandler.getPlayerHandler);
-router.route("/players/").post(playerHandler.createPlayerHandler);
+router.route("/players").post(playerHandler.createPlayerHandler);
 router.route("/players/:playerId").put(playerHandler.updatePlayerHandler);
 router.route("/players/populate").post(playerHandler.createPlayersHandler);
 // router.route("/players/:id").delete(deletePlayer); If we delete a player what happens to the games he has played? what happens to the tournaments and the ratings?
@@ -41,7 +41,12 @@ router
 	.route("/tournaments/:tourneyId")
 	.get(tourneyHandler.getTournamentWithGamesHandler);
 router.route("/tournaments").post(tourneyHandler.addTournamentWithGamesHandler);
-// router.route("/sync-tournament/:id").patch(syncTournament);
-// router.route("/lichess-tournament/:id").get(getLichessArenaTournament);
+router.route("/tournaments").get(tourneyHandler.listTournamentsHandler);
+router
+	.route("/tournaments/:tournamentId/sync")
+	.patch(tourneyHandler.syncTournamentHandler);
+router
+	.route("/tournaments/lichess/arena/:id")
+	.get(tourneyHandler.getLichessArenaTournamentHandler);
 
 export default router;

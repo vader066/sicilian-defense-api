@@ -31,6 +31,7 @@ export interface PLAYER {
 	last_name: string;
 	programme: string;
 	username: string;
+	rating: number;
 	date_of_birth: string;
 	sex: "MALE" | "FEMALE";
 	created_at?: string;
@@ -52,13 +53,13 @@ export interface GAME {
 	game_id: string;
 	white: string;
 	black: string;
-	winner: string;
-	black_rating: number;
-	white_rating: number;
+	winner?: string;
+	black_rating?: number; // shouldn't be optional will change later
+	white_rating?: number; // shouldn't be optional will change later
 	played_at: string;
-	tournament_id: string;
+	tournament_id?: string;
 	draw: boolean;
-	forfeit: "BF" | "WF" | "FF";
+	forfeit?: "BF" | "WF" | "FF"; // Black Forfeit, White Forfeit, Full(Both players) Forfeit
 }
 
 export interface DBTourney {
@@ -68,19 +69,6 @@ export interface DBTourney {
 	synced: boolean;
 	club_id: string;
 	began_at?: string;
-}
-
-export interface GAMES {
-	gameId: string;
-	black: string;
-	white: string;
-	winner?: string;
-	blackRating?: number; //Black Players Rating going into the game
-	whiteRating?: number; //White Players Rating going into the game
-	date: Date;
-	tournaments?: string;
-	draw?: boolean;
-	forfeit?: "BF" | "WF" | "FF"; // Black Forfeit, White Forfeit, Full(Both players) Forfeit
 }
 
 export interface TOURNAMENT {

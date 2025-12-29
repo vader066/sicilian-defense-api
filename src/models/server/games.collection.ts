@@ -13,13 +13,13 @@ export default async function createGamesCollection() {
 	console.log("Games collection has been created");
 
 	await Promise.all([
-		databases.createStringAttribute(db, gameCollection, "gameId", 20, true),
+		databases.createStringAttribute(db, gameCollection, "game_id", 20, true),
 		databases.createStringAttribute(db, gameCollection, "black", 20, true),
 		databases.createStringAttribute(db, gameCollection, "white", 20, true),
 		databases.createStringAttribute(db, gameCollection, "winner", 20, false),
 		databases.createIntegerAttribute(db, gameCollection, "blackRating", false), //entry rating for black player
 		databases.createIntegerAttribute(db, gameCollection, "whiteRating", false), //entry rating for white player
-		databases.createDatetimeAttribute(db, gameCollection, "date", true),
+		databases.createDatetimeAttribute(db, gameCollection, "played_at", true),
 		databases.createBooleanAttribute(db, gameCollection, "draw", false),
 		databases.createEnumAttribute(
 			db,
@@ -36,9 +36,9 @@ export default async function createGamesCollection() {
 		databases.createIndex(
 			db,
 			gameCollection,
-			"gameId",
+			"game_id",
 			IndexType.Unique,
-			["gameId"],
+			["game_id"],
 			["asc"]
 		),
 
@@ -54,4 +54,4 @@ export default async function createGamesCollection() {
 }
 
 //game
-// Id, players, winner, tournament, date
+// Id, players, winner, tournament, played_at

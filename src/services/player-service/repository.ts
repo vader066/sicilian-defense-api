@@ -4,16 +4,9 @@ import { databases } from "@/models/server/config";
 import { PLAYER } from "@/types/database/models";
 
 export class PlayerRepository {
-	async createPlayer(player: PLAYER) {
-		await databases.createDocument(db, playerCollection, player.username, {
-			...player,
-		});
-		console.log("Player created");
-	}
-
 	async createPlayerV2(player: PLAYER) {
 		const result = await pool.query(
-			"INSERT INTO players (id, club_id, first_name, last_name, programme, username, date_of_birth, sex, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()) RETURNING *",
+			"INSERT INTO players (id, club_id, first_name, last_name, programme, username, date_of_birth, sex, rating, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()) RETURNING *",
 			[
 				player.id,
 				player.club_id,
@@ -23,6 +16,7 @@ export class PlayerRepository {
 				player.username,
 				player.date_of_birth,
 				player.sex,
+				player.rating,
 			]
 		);
 		return result.rows[0];
@@ -75,6 +69,7 @@ export class PlayerRepository {
         username = $6,
         date_of_birth = $7,
         sex = $8,
+        rating = $9,
         updated_at = NOW()
     WHERE id = $1
     RETURNING *;
@@ -88,6 +83,7 @@ export class PlayerRepository {
 			player.username,
 			player.date_of_birth,
 			player.sex,
+			player.rating,
 		]);
 
 		const updatedPlayer = result.rows[0];
@@ -99,7 +95,7 @@ export class PlayerRepository {
 
 		const placeholders = players
 			.map((p, idx) => {
-				const base = idx * 7; // number of fields per player
+				const base = idx * 8; // number of fields per player
 				values.push(
 					p.first_name,
 					p.last_name,
@@ -107,7 +103,8 @@ export class PlayerRepository {
 					p.date_of_birth,
 					p.programme,
 					p.username,
-					p.club_id
+					p.club_id,
+					p.rating
 				);
 
 				return `(
@@ -120,14 +117,15 @@ export class PlayerRepository {
         $${base + 6},  -- username
         NOW(),
         NOW(),
-        $${base + 7}   -- club_id
+        $${base + 7},  -- club_id
+        $${base + 8}   -- rating
       )`;
 			})
 			.join(",\n");
 
 		const query = `
     INSERT INTO players
-    (id, first_name, last_name, sex, date_of_birth, programme, username, created_at, updated_at, club_id)
+    (id, first_name, last_name, sex, date_of_birth, programme, username, created_at, updated_at, club_id, rating)
     VALUES
     ${placeholders}
     RETURNING id;
