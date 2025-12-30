@@ -4,14 +4,13 @@ import { DBTourney, GAME } from "@/types/database/models";
 export class TourneyRepository {
 	async addTournament(tournament: DBTourney): Promise<DBTourney> {
 		const result = await pool.query<DBTourney>(
-			"INSERT INTO tournaments (id, tournament_name, number_of_players, synced, club_id, began_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+			"INSERT INTO tournaments (id, tournament_name, number_of_players, synced, club_id, began_at) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *",
 			[
 				tournament.id,
 				tournament.tournament_name,
 				tournament.number_of_players,
 				tournament.synced,
 				tournament.club_id,
-				tournament.began_at,
 			]
 		);
 		return result.rows[0];
