@@ -101,7 +101,7 @@ export class GameRepository {
     (game_id, white, black, winner, black_rating, white_rating, played_at, tournament_id, draw, forfeit)
     VALUES
     ${placeholders}
-    RETURNING id;
+    RETURNING game_id;
   `;
 
 		const result = await pool.query(query, values);
