@@ -54,6 +54,7 @@ export interface GAME {
 	white: string;
 	black: string;
 	winner?: string;
+	round: number;
 	black_rating?: number; // shouldn't be optional will change later
 	white_rating?: number; // shouldn't be optional will change later
 	played_at: string;
@@ -65,6 +66,7 @@ export interface GAME {
 export interface DBTourney {
 	id: string;
 	tournament_name: string;
+	number_of_rounds: number;
 	number_of_players: number;
 	synced: boolean;
 	club_id: string;
@@ -74,6 +76,7 @@ export interface DBTourney {
 export interface TOURNAMENT {
 	id: string;
 	tournamentName: string;
+	numberOfRounds: number;
 	games: Array<GAME>;
 	playerIDs: Array<string>; // player id's
 	dbPlayers?: Array<PLAYER>; // don't use for now

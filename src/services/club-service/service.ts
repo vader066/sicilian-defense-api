@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { CREATEACCOUNTREQ } from "@/types/club";
 import { AdminAuthService } from "../admin-auth-service/service";
 import { AdminManagementService } from "../admin-management-service/service";
+import { PlayerService } from "../player-service/player-service";
 
 interface CREATEACCOUNTRES extends ADMIN, CLUB {}
 
@@ -12,6 +13,7 @@ export class ClubService {
 
 	private adminAuthClient = new AdminAuthService();
 	private adminClient = new AdminManagementService();
+	// private playerClient = new PlayerService();
 
 	async createAccount(req: CREATEACCOUNTREQ): Promise<CREATEACCOUNTRES> {
 		// create club
@@ -45,6 +47,21 @@ export class ClubService {
 			password_hash: hashedPassword,
 		};
 		await this.adminAuthClient.createAdminAuth(adminAuth);
+
+		// create player if creator is also a player
+		// if (req.creator_is_player) {
+		// 	await this.playerClient.CreatePlayer({
+		// 		club_id: clubID,
+		// 		first_name: req.first_name,
+		// 		last_name: req.last_name,
+		// 		id: adminId, // use the same id as admin
+		// 		programme: "General",
+		// 		username: req.username,
+		// 		rating: 1400,
+		// 		date_of_birth: "2000-01-01",
+		// 		sex: "FEMALE",
+		// 	});
+		// }
 
 		// response
 		return {
