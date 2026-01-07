@@ -4,13 +4,14 @@ import { DBTourney, GAME } from "@/types/database/models";
 export class TourneyRepository {
 	async addTournament(tournament: DBTourney): Promise<DBTourney> {
 		const result = await pool.query<DBTourney>(
-			"INSERT INTO tournaments (id, tournament_name, number_of_players, synced, club_id, began_at) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *",
+			"INSERT INTO tournaments (id, tournament_name, number_of_players, synced, club_id, number_of_rounds, began_at) VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING *",
 			[
 				tournament.id,
 				tournament.tournament_name,
 				tournament.number_of_players,
 				tournament.synced,
 				tournament.club_id,
+				tournament.number_of_rounds,
 			]
 		);
 		return result.rows[0];
@@ -50,6 +51,7 @@ export class TourneyRepository {
           tournament_name = $3,
           synced = $4,
           number_of_players = $5,
+          number_of_rounds = $6,
           began_at = NOW()
       WHERE id = $1
       RETURNING *;
@@ -60,6 +62,7 @@ export class TourneyRepository {
 			tournament.tournament_name,
 			tournament.synced,
 			tournament.number_of_players,
+			tournament.number_of_rounds,
 		]);
 
 		const updatedPlayer = result.rows[0];

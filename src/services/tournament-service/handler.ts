@@ -62,6 +62,7 @@ export class TournamentServiceHandler extends BaseHandler {
 				club_id: admin.club_id,
 				number_of_players: body.playerIDs.length,
 				tournament_name: body.tournamentName,
+				number_of_rounds: body.numberOfRounds,
 				synced: false,
 			};
 

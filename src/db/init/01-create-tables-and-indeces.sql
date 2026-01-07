@@ -32,6 +32,7 @@ CREATE TABLE tournaments (
   id UUID PRIMARY KEY,
   tournament_name VARCHAR(100) NOT NULL,
   number_of_players INTEGER NOT NULL,
+  number_of_rounds INTEGER NOT NULL DEFAULT 1,
   synced BOOLEAN NOT NULL DEFAULT FALSE,
   club_id UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
   began_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -42,6 +43,7 @@ CREATE TABLE games (
   white UUID REFERENCES players(id) NOT NULL,
   black UUID REFERENCES players(id) NOT NULL,
   winner UUID REFERENCES players(id),
+  round INTEGER NOT NULL DEFAULT 1,
   black_rating DOUBLE PRECISION,
   white_rating DOUBLE PRECISION,
   played_at TIMESTAMP NOT NULL DEFAULT NOW(),

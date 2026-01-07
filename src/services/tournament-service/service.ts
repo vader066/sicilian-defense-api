@@ -51,6 +51,7 @@ export class TournamentService {
 				playerIDs,
 				clubId: tourney.club_id,
 				beganAt: tourney.began_at ? new Date(tourney.began_at) : new Date(),
+				numberOfRounds: tourney.number_of_rounds,
 			};
 
 			return tournament;

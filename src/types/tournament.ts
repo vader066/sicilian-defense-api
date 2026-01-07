@@ -3,6 +3,7 @@ import { GameSchema } from "./game";
 
 export const createTournamentReqSchema = z.object({
 	tournamentName: z.string(),
+	numberOfRounds: z.number().min(1),
 	games: z.array(GameSchema), // same as game object in db types
 	playerIDs: z.array(z.string()),
 });

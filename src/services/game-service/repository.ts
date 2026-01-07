@@ -4,7 +4,7 @@ import { GAME } from "@/types/database/models";
 export class GameRepository {
 	async addGame(game: GAME) {
 		const result = await pool.query(
-			"INSERT INTO games (game_id, white, black, winner, black_rating, white_rating, played_at, tournament_id, draw, forfeit, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()) RETURNING *",
+			"INSERT INTO games (game_id, white, black, winner, black_rating, white_rating, played_at, tournament_id, draw, forfeit, round, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()) RETURNING *",
 			[
 				game.game_id,
 				game.white,
@@ -16,6 +16,7 @@ export class GameRepository {
 				game.tournament_id,
 				game.draw,
 				game.forfeit,
+				game.round,
 			]
 		);
 		return result.rows[0];
@@ -69,7 +70,7 @@ export class GameRepository {
 
 		const placeholders = games
 			.map((g, idx) => {
-				const base = idx * 8; // number of fields per game
+				const base = idx * 9; // number of fields per game
 				values.push(
 					g.white,
 					g.black,
@@ -78,7 +79,8 @@ export class GameRepository {
 					g.white_rating,
 					g.tournament_id,
 					g.draw,
-					g.forfeit
+					g.forfeit,
+					g.round
 				);
 
 				return `(
@@ -91,14 +93,15 @@ export class GameRepository {
         NOW(),  -- played_at
         $${base + 6},  -- tournament_id
         $${base + 7},  -- draw
-        $${base + 8}   -- forfeit
+        $${base + 8},   -- forfeit
+        $${base + 9}   -- round
       )`;
 			})
 			.join(",\n");
 
 		const query = `
     INSERT INTO games
-    (game_id, white, black, winner, black_rating, white_rating, played_at, tournament_id, draw, forfeit)
+    (game_id, white, black, winner, black_rating, white_rating, played_at, tournament_id, draw, forfeit, round)
     VALUES
     ${placeholders}
     RETURNING game_id;
