@@ -1,5 +1,5 @@
 import { pool } from "@/db/db";
-import { DBTourney, GAME } from "@/types/database/models";
+import { DBTourney, GAME, TOURNAMENT_PAIRINGS } from "@/types/database/models";
 
 export class TourneyRepository {
 	async addTournament(tournament: DBTourney): Promise<DBTourney> {
@@ -73,5 +73,54 @@ export class TourneyRepository {
 
 		const updatedPlayer = result.rows[0];
 		return updatedPlayer;
+	}
+
+	async addTournamentPairings(
+		pairings: TOURNAMENT_PAIRINGS[]
+	): Promise<number> {
+		const values: any[] = [];
+
+		const placeholders = pairings
+			.map((p, idx) => {
+				const base = idx * 6; // number of fields per pairing
+				values.push(
+					p.id,
+					p.tournament_id,
+					p.white || null,
+					p.black || null,
+					p.bye || null,
+					p.round
+				);
+
+				return `(
+        $${base + 1},  -- id
+        $${base + 2},  -- tournament_id
+        $${base + 3},  -- white
+        $${base + 4},  -- black
+        $${base + 5},  -- bye
+        $${base + 6}   -- round
+      )`;
+			})
+			.join(",\n");
+
+		const query = `
+    INSERT INTO tournament_pairings
+    (id, tournament_id, white, black, bye, round)
+    VALUES
+    ${placeholders}
+    RETURNING id;
+  `;
+
+		const result = await pool.query(query, values);
+		const insertCount = result.rowCount;
+		if (!insertCount) {
+			const error = new Error(
+				"Operation unsuccessfull. Add Tournament Pairings returned count null"
+			);
+			(error as any).code = 500;
+			throw error;
+		}
+
+		return insertCount;
 	}
 }

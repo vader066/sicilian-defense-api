@@ -10,6 +10,8 @@ import {
 	syncTournReq,
 	syncTournReqSchema,
 	tournamentReq,
+	createRoundRobinTournamentReq,
+	createRoundRobinTournamentReqSchema,
 } from "@/types/tournament";
 import { getArenaGames } from "../lichess";
 
@@ -147,6 +149,56 @@ export class TournamentServiceHandler extends BaseHandler {
 			res
 				.status(200)
 				.json({ message: "success", data: lichessTourney, status: 200 });
+		} catch (error: any) {
+			const status = this.errorStatus(error);
+			res
+				.status(status)
+				.json({ message: error.message, data: null, status: status });
+		}
+	};
+
+	createRoundRobinTournamentHandler = async (req: Request, res: Response) => {
+		try {
+			// authenticate admin user
+			const userId = this.authenticate(req);
+			const admin = await this.adminClient.getAdminByID(userId);
+
+			// validate request body
+			const body = this.validate<createRoundRobinTournamentReq>(
+				req,
+				createRoundRobinTournamentReqSchema
+			);
+
+			// generate round-robin pairings
+			const rounds = this.service.generateRoundRobinPairings(body.playerIDs);
+
+			// create tournament
+			const tournamentId = randomUUID();
+			const tournament: DBTourney = {
+				id: tournamentId,
+				club_id: admin.club_id,
+				tournament_name: body.tournamentName,
+				number_of_rounds: rounds.length,
+				number_of_players: body.playerIDs.length,
+				number_of_games: 0,
+				status: "in_progress",
+				synced: false,
+			};
+
+			const createdTournament = await this.service.AddTournament(tournament);
+
+			// add round-robin pairings
+			const pairings = await this.service.addRoundRobinPairings(
+				rounds,
+				tournamentId
+			);
+
+			const response = {
+				tournament: createdTournament,
+				pairings: pairings,
+			};
+
+			res.status(201).json({ message: "success", data: response, status: 201 });
 		} catch (error: any) {
 			const status = this.errorStatus(error);
 			res

@@ -1,8 +1,15 @@
-import { DBTourney, PLAYER, TOURNAMENT } from "@/types/database/models";
+import {
+	DBTourney,
+	PLAYER,
+	TOURNAMENT,
+	TOURNAMENT_PAIRINGS,
+} from "@/types/database/models";
 import { TourneyRepository } from "./repository";
 import { GameService } from "../game-service/service";
 import { PlayerService } from "../player-service/player-service";
 import { syncTournReq } from "@/types/tournament";
+import { generateFullRoundRobinSchedule, Round } from "@/utils/round-robin";
+import { randomUUID } from "node:crypto";
 
 export class TournamentService {
 	private tournamentRepository = new TourneyRepository();
@@ -106,5 +113,37 @@ export class TournamentService {
 
 		await Promise.all(promises);
 		return updatedTourney;
+	}
+
+	generateRoundRobinPairings(playerIDs: string[]): Round[] {
+		const rounds = generateFullRoundRobinSchedule([...playerIDs]);
+		return rounds;
+	}
+
+	async addRoundRobinPairings(
+		rounds: Round[],
+		tournamentId: string
+	): Promise<TOURNAMENT_PAIRINGS[]> {
+		const pairings: TOURNAMENT_PAIRINGS[] = [];
+
+		// Transform rounds into tournament_pairings
+		for (const round of rounds) {
+			for (const pairing of round.pairings) {
+				const tournamentPairing: TOURNAMENT_PAIRINGS = {
+					id: randomUUID(),
+					tournament_id: tournamentId,
+					white: pairing.white,
+					black: pairing.black,
+					bye: pairing.bye,
+					round: round.round,
+					created_at: new Date().toISOString(),
+				};
+				pairings.push(tournamentPairing);
+			}
+		}
+
+		// Add pairings to database
+		await this.tournamentRepository.addTournamentPairings(pairings);
+		return pairings;
 	}
 }
