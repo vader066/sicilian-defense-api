@@ -49,6 +49,8 @@ export class TournamentService {
 				id: tourney.id,
 				tournamentName: tourney.tournament_name,
 				playerIDs,
+				status: tourney.status,
+				numberOfGames: tourney.number_of_games,
 				clubId: tourney.club_id,
 				beganAt: tourney.began_at ? new Date(tourney.began_at) : new Date(),
 				numberOfRounds: tourney.number_of_rounds,

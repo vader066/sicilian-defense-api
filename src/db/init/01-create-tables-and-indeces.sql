@@ -4,6 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Create ENUM types
 CREATE TYPE forfeit_type AS ENUM ('BF', 'WF', 'FF');
 CREATE TYPE sex AS ENUM ('MALE', 'FEMALE');
+CREATE TYPE tournament_status AS ENUM ('in_progress', 'completed', 'cancelled');
 
 -- Create tables
 CREATE TABLE clubs (
@@ -33,6 +34,8 @@ CREATE TABLE tournaments (
   tournament_name VARCHAR(100) NOT NULL,
   number_of_players INTEGER NOT NULL,
   number_of_rounds INTEGER NOT NULL DEFAULT 1,
+  number_of_games INTEGER NOT NULL DEFAULT 0,
+  status tournament_status NOT NULL DEFAULT 'in_progress',
   synced BOOLEAN NOT NULL DEFAULT FALSE,
   club_id UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
   began_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -58,6 +61,16 @@ CREATE TABLE tournament_players (
   player_id UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
   joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
   PRIMARY KEY (tournament_id, player_id)
+);
+
+CREATE TABLE tournament_pairings (
+  id UUID PRIMARY KEY,
+  tournament_id UUID NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+  white UUID,
+  black UUID,
+  bye UUID,
+  round INTEGER NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE admin (
@@ -92,6 +105,7 @@ CREATE TABLE super_admin_auth (
   password_hash VARCHAR NOT NULL
 );
 
+CREATE INDEX idx_tournament_pairings_tournament_id ON tournament_pairings(tournament_id);
 CREATE INDEX idx_players_username ON players(username);
 CREATE INDEX idx_players_club_id ON players(club_id);
 CREATE INDEX idx_tournaments_club_id ON tournaments(club_id);
