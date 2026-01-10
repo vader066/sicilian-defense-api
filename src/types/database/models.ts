@@ -68,15 +68,29 @@ export interface DBTourney {
 	tournament_name: string;
 	number_of_rounds: number;
 	number_of_players: number;
+	number_of_games: number;
+	status: "in_progress" | "completed" | "cancelled";
 	synced: boolean;
 	club_id: string;
 	began_at?: string;
+}
+
+export interface TOURNAMENT_PAIRINGS {
+	id: string;
+	tournament_id: string;
+	white?: string;
+	black?: string;
+	bye?: string;
+	round: number;
+	created_at: string;
 }
 
 export interface TOURNAMENT {
 	id: string;
 	tournamentName: string;
 	numberOfRounds: number;
+	numberOfGames: number;
+	status: "in_progress" | "completed" | "cancelled";
 	games: Array<GAME>;
 	playerIDs: Array<string>; // player id's
 	dbPlayers?: Array<PLAYER>; // don't use for now
