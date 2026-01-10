@@ -62,7 +62,7 @@ export class TournamentServiceHandler extends BaseHandler {
 			const tournament: DBTourney = {
 				id: tournId,
 				club_id: admin.club_id,
-				status: "in_progress",
+				status: "completed",
 				number_of_games: body.games.length,
 				number_of_players: body.playerIDs.length,
 				tournament_name: body.tournamentName,
