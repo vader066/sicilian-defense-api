@@ -48,5 +48,8 @@ router
 router
 	.route("/tournaments/lichess/arena/:id")
 	.get(tourneyHandler.getLichessArenaTournamentHandler);
+router
+	.route("/tournaments/round-robin/create")
+	.post(tourneyHandler.createRoundRobinTournamentHandler);
 
 export default router;
