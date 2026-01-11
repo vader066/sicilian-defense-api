@@ -19,14 +19,22 @@ export class AdminManagementService {
 		const existingAdminWithSameEmail =
 			await this.adminRepository.getAdminByEmail(admin.email);
 		if (existingAdminWithSameEmail != null) {
-			throw Error(`Admin with email: ${admin.email} already exists`);
+			let error = new Error(
+				`Admin with email: ${admin.email} already exists`
+			) as Error & { code: number };
+			error.code = 409;
+			throw error;
 		}
 
 		// check for existing admin with username
 		const existingAdminWithSameUsername =
 			await this.adminRepository.getAdminByUsername(admin.username);
 		if (existingAdminWithSameUsername != null) {
-			throw Error(`Admin with username: ${admin.username} already exists`);
+			let error = new Error(
+				`Admin with username: ${admin.username} already exists`
+			) as Error & { code: number };
+			error.code = 409;
+			throw error;
 		}
 
 		await this.adminRepository.createAdmin(admin);
