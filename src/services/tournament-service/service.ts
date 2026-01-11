@@ -146,4 +146,41 @@ export class TournamentService {
 		await this.tournamentRepository.addTournamentPairings(pairings);
 		return pairings;
 	}
+
+	async GetTournamentPairings(
+		tournamentId: string
+	): Promise<Round[] | null> {
+		const pairings =
+			await this.tournamentRepository.getTournamentPairings(tournamentId);
+
+		if (pairings.length === 0) {
+			return null;
+		}
+
+		// Transform pairings back into rounds
+		const roundsMap = new Map<number, Round>();
+
+		for (const pairing of pairings) {
+			if (!roundsMap.has(pairing.round)) {
+				roundsMap.set(pairing.round, {
+					round: pairing.round,
+					pairings: [],
+				});
+			}
+
+			const round = roundsMap.get(pairing.round)!;
+			round.pairings.push({
+				white: pairing.white,
+				black: pairing.black,
+				bye: pairing.bye,
+			});
+		}
+
+		// Convert map to sorted array
+		const rounds = Array.from(roundsMap.values()).sort(
+			(a, b) => a.round - b.round
+		);
+
+		return rounds;
+	}
 }
