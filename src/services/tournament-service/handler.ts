@@ -206,4 +206,39 @@ export class TournamentServiceHandler extends BaseHandler {
 				.json({ message: error.message, data: null, status: status });
 		}
 	};
+
+	getTournamentPairingsHandler = async (req: Request, res: Response) => {
+		try {
+			// authenticate admin user
+			const userId = this.authenticate(req);
+			const admin = await this.adminClient.getAdminByID(userId);
+
+			const tournamentId = req.params.tournamentId;
+
+			// verify tournament exists
+			const tournament = await this.service.GetTournamentById(tournamentId);
+
+			// authorization: verify tournament belongs to admin's club
+			if (admin.club_id !== tournament.club_id) {
+				res.status(403).json({
+					message: `This admin user and tournament do not belong to the same club`,
+					data: null,
+					status: 403,
+				});
+				return;
+			}
+
+			// get tournament pairings
+			const rounds = await this.service.GetTournamentPairings(tournamentId);
+
+			const response = rounds ? { rounds } : null;
+
+			res.status(200).json({ message: "success", data: response, status: 200 });
+		} catch (error: any) {
+			const status = this.errorStatus(error);
+			res
+				.status(status)
+				.json({ message: error.message, data: null, status: status });
+		}
+	};
 }

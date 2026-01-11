@@ -46,6 +46,9 @@ router
 	.route("/tournaments/:tournamentId/sync")
 	.patch(tourneyHandler.syncTournamentHandler);
 router
+	.route("/tournaments/:tournamentId/pairings")
+	.get(tourneyHandler.getTournamentPairingsHandler);
+router
 	.route("/tournaments/lichess/arena/:id")
 	.get(tourneyHandler.getLichessArenaTournamentHandler);
 router

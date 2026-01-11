@@ -123,4 +123,20 @@ export class TourneyRepository {
 
 		return insertCount;
 	}
+
+	async getTournamentPairings(
+		tournamentId: string
+	): Promise<TOURNAMENT_PAIRINGS[]> {
+		try {
+			const result = await pool.query<TOURNAMENT_PAIRINGS>(
+				"SELECT * FROM tournament_pairings WHERE tournament_id = $1 ORDER BY round ASC",
+				[tournamentId]
+			);
+			return result.rows;
+		} catch (error: any) {
+			throw new Error(
+				`Error in repo function getTournamentPairings: ${error.message}`
+			);
+		}
+	}
 }
