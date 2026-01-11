@@ -22,7 +22,7 @@ CREATE TABLE players (
   last_name VARCHAR(100) NOT NULL,
   programme VARCHAR(100) NOT NULL,
   rating NUMERIC(10, 3) NOT NULL DEFAULT 0.000,
-  username VARCHAR(100) UNIQUE NOT NULL,
+  username VARCHAR(100) NOT NULL,
   date_of_birth DATE NOT NULL,
   sex sex NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),

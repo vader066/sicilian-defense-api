@@ -14,7 +14,12 @@ export class PlayerService {
 			player.id
 		);
 		if (existingPlayerByUsername) {
-			throw new Error(`Player with username ${player.username} already exists`);
+			// only throw error if player with same username is in the same club
+			if (existingPlayerByUsername.club_id === player.club_id) {
+				throw new Error(
+					`Player with username ${player.username} already exists`
+				);
+			}
 		} else if (existingPlayerById) {
 			throw new Error(`Player with ID ${player.id} already exists`);
 		}

@@ -57,15 +57,15 @@ export function generateFullRoundRobinSchedule(playerIDs: string[]): Round[] {
 }
 
 // Example usage:
-const playerIDs: string[] = [
-	"Alice",
-	"Bob",
-	"Charlie",
-	"Diana",
-	"Eve",
-	"Frank",
-	"Grace",
-];
+// const playerIDs: string[] = [
+// 	"Alice",
+// 	"Bob",
+// 	"Charlie",
+// 	"Diana",
+// 	"Eve",
+// 	"Frank",
+// 	"Grace",
+// ];
 
-const schedule = generateFullRoundRobinSchedule(playerIDs);
-console.log(JSON.stringify(schedule, null, 2));
+// const schedule = generateFullRoundRobinSchedule(playerIDs);
+// console.log(JSON.stringify(schedule, null, 2));
