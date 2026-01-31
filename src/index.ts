@@ -10,7 +10,9 @@ const app = express();
 
 let allowedOrigin: string;
 if (env.environment === "production") {
-	allowedOrigin = "https://sicilian-defense-ui-app.onrender.com";
+	// allowedOrigin = "https://sicilian-defense-ui-app.onrender.com";
+	// temporarily allow localhost for testing with staging
+	allowedOrigin = "http://localhost:3000";
 } else {
 	allowedOrigin = "http://localhost:3000";
 }
