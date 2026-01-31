@@ -28,11 +28,15 @@ jobs:
           docker run -d \
            --name api-test \
            -p 5001:5001 \
-           -e PORT=${{ vars.PORT }} \
            -e NODE_ENV=${{ vars.NODE_ENV }} \
-           -e PUBLIC_APPWRITE_HOST_URL=${{ vars.PUBLIC_APPWRITE_HOST_URL }} \
-           -e PUBLIC_APPWRITE_PROJECT_ID=${{ vars.PUBLIC_APPWRITE_PROJECT_ID }} \
-           -e APPWRITE_API_KEY=${{ secrets.APPWRITE_API_KEY }} \
+           -e PORT=${{ vars.PORT }} \
+           -e DB_PORT=${{ vars.DB_PORT }} \
+           -e DB_HOST=${{ vars.DB_HOST }} \
+           -e DB_USER=${{ vars.DB_USER }} \
+           -e DB_NAME=${{ vars.DB_NAME }} \
+           -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+           -e ACCESS_JWTSECRET=${{ secrets.ACCESS_JWTSECRET }} \
+           -e REFRESH_JWTSECRET=${{ secrets.REFRESH_JWTSECRET }} \
            ${{ secrets.DOCKERHUB_USERNAME }}/sicilian-defense-api:latest
           sleep 10  # Wait for the app to start
 
