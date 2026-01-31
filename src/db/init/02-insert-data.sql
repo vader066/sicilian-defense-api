@@ -6,7 +6,8 @@ VALUES (
   36,
   NOW(),
   NOW()
-);
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- Insert players
 INSERT INTO players
@@ -39,4 +40,5 @@ VALUES
 (gen_random_uuid(), 'Lawrence', 'Obeng', 'MALE', '2006-12-19', 'Civil Engineering', 'Lobeng', NOW(), NOW(), 'e7b8f7c4-3b21-4c9e-a8f4-1d2f6a5f9b0a'),
 (gen_random_uuid(), 'Johnny Edem', 'Agboado', 'MALE', '1999-08-24', 'None', 'EdemEthics', NOW(), NOW(), 'e7b8f7c4-3b21-4c9e-a8f4-1d2f6a5f9b0a'),
 (gen_random_uuid(), 'David', 'Broni', 'MALE', '2005-11-19', 'Computer engineering', 'Bossgrass', NOW(), NOW(), 'e7b8f7c4-3b21-4c9e-a8f4-1d2f6a5f9b0a'),
-(gen_random_uuid(), 'Fredrick', 'Opoku', 'MALE', '2005-07-07', 'Mechanical Engineering', 'frick_0', NOW(), NOW(), 'e7b8f7c4-3b21-4c9e-a8f4-1d2f6a5f9b0a');
+(gen_random_uuid(), 'Fredrick', 'Opoku', 'MALE', '2005-07-07', 'Mechanical Engineering', 'frick_0', NOW(), NOW(), 'e7b8f7c4-3b21-4c9e-a8f4-1d2f6a5f9b0a')
+ON CONFLICT DO NOTHING;
