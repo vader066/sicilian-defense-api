@@ -6,19 +6,22 @@ import { Router } from "express";
 
 const router = Router();
 
+// initialize handlers
+const clubHandler = new ClubServiceHandler();
+const playerHandler = new PlayerServiceHandler();
+const adminAuthHandler = new AdminAuthHandler();
+const tourneyHandler = new TournamentServiceHandler();
+
 // Check if the server is running
-router.route("/health").get((_, res) => {
+router.route("/health").get((req, res) => {
 	res.status(200).json({
 		message: "Server is running",
 		status: 200,
 	});
 });
 
-// initialize handlers
-const clubHandler = new ClubServiceHandler();
-const playerHandler = new PlayerServiceHandler();
-const adminAuthHandler = new AdminAuthHandler();
-const tourneyHandler = new TournamentServiceHandler();
+//Check if server has access db to ensure db connection is working
+router.route("/health/db").get(clubHandler.testHandler);
 
 // player routes
 router.route("/club/:clubId/players").get(playerHandler.getClubPlayersHandler);
