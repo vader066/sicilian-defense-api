@@ -33,6 +33,7 @@ jobs:
           DB_USER=${{ vars.DB_USER }}
           DB_NAME=${{ vars.DB_NAME }}
           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
           ACCESS_JWTSECRET=${{ secrets.ACCESS_JWTSECRET }}
           REFRESH_JWTSECRET=${{ secrets.REFRESH_JWTSECRET }}
           DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
