@@ -30,19 +30,18 @@ export class ClubServiceHandler extends BaseHandler {
 				"e7b8f7c4-3b21-4c9e-a8f4-1d2f6a5f9b0a",
 			);
 			if (club) {
-				res
-					.status(200)
-					.json({
-						message: "success test club retrieved",
-						data: club,
-						status: 200,
-					});
+				res.status(200).json({
+					message: "success test club retrieved",
+					data: club,
+					status: 200,
+				});
 			} else {
 				res
 					.status(404)
 					.json({ message: "Club not found", data: null, status: 404 });
 			}
 		} catch (error: any) {
+			console.log(error);
 			const status = error.code || 500;
 			res
 				.status(status)
