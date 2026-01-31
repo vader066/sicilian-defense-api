@@ -2,12 +2,32 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Create ENUM types
-CREATE TYPE forfeit_type AS ENUM ('BF', 'WF', 'FF');
-CREATE TYPE sex AS ENUM ('MALE', 'FEMALE');
-CREATE TYPE tournament_status AS ENUM ('in_progress', 'completed', 'cancelled');
+DO $$ BEGIN
+  CREATE TYPE forfeit_type AS ENUM ('BF', 'WF', 'FF');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE sex AS ENUM ('MALE', 'FEMALE');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE tournament_status AS ENUM ('in_progress', 'completed', 'cancelled');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE user_types AS ENUM ('ADMIN', 'PLAYER');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 -- Create tables
-CREATE TABLE clubs (
+CREATE TABLE IF NOT EXISTS clubs (
   id UUID PRIMARY KEY,
   club_name VARCHAR(100) NOT NULL,
   number_of_players INTEGER NOT NULL,
@@ -15,7 +35,7 @@ CREATE TABLE clubs (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE players (
+CREATE TABLE IF NOT EXISTS players (
   id UUID PRIMARY KEY,
   club_id UUID NOT NULL REFERENCES clubs(id) ON DELETE CASCADE,
   first_name VARCHAR(100) NOT NULL,
@@ -29,7 +49,7 @@ CREATE TABLE players (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE tournaments (
+CREATE TABLE IF NOT EXISTS tournaments (
   id UUID PRIMARY KEY,
   tournament_name VARCHAR(100) NOT NULL,
   number_of_players INTEGER NOT NULL,
@@ -41,7 +61,7 @@ CREATE TABLE tournaments (
   began_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE games (
+CREATE TABLE IF NOT EXISTS games (
   game_id UUID PRIMARY KEY,
   white UUID REFERENCES players(id) NOT NULL,
   black UUID REFERENCES players(id) NOT NULL,
@@ -56,14 +76,14 @@ CREATE TABLE games (
 );
 
 
-CREATE TABLE tournament_players (
+CREATE TABLE IF NOT EXISTS tournament_players (
   tournament_id UUID NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
   player_id UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
   joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
   PRIMARY KEY (tournament_id, player_id)
 );
 
-CREATE TABLE tournament_pairings (
+CREATE TABLE IF NOT EXISTS tournament_pairings (
   id UUID PRIMARY KEY,
   tournament_id UUID NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
   white UUID,
@@ -73,7 +93,7 @@ CREATE TABLE tournament_pairings (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE admin (
+CREATE TABLE IF NOT EXISTS admin (
   id UUID PRIMARY KEY,
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NOT NULL,
@@ -86,7 +106,7 @@ CREATE TABLE admin (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE super_admin (
+CREATE TABLE IF NOT EXISTS super_admin (
   id UUID PRIMARY KEY,
   email VARCHAR(100) UNIQUE NOT NULL,
   admin_name VARCHAR(100) NOT NULL,
@@ -95,19 +115,30 @@ CREATE TABLE super_admin (
 );
 
 
-CREATE TABLE admin_auth (
+CREATE TABLE IF NOT EXISTS admin_auth (
   admin_id UUID PRIMARY KEY REFERENCES admin(id),
   password_hash VARCHAR NOT NULL
 );
 
-CREATE TABLE super_admin_auth (
+CREATE TABLE IF NOT EXISTS super_admin_auth (
   admin_id UUID PRIMARY KEY REFERENCES super_admin(id),
   password_hash VARCHAR NOT NULL
 );
 
-CREATE INDEX idx_tournament_pairings_tournament_id ON tournament_pairings(tournament_id);
-CREATE INDEX idx_players_username ON players(username);
-CREATE INDEX idx_players_club_id ON players(club_id);
-CREATE INDEX idx_tournaments_club_id ON tournaments(club_id);
-CREATE INDEX idx_games_tournament_id ON games(tournament_id);
+CREATE TABLE IF NOT EXISTS refresh_sessions (
+  id UUID PRIMARY KEY,
+  user_id UUID NOT NULL,
+  user_type user_types NOT NULL,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TIMESTAMPTZ NOT NULL, 
+  revoked_at TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_tournament_pairings_tournament_id ON tournament_pairings(tournament_id);
+CREATE INDEX IF NOT EXISTS idx_players_username ON players(username);
+CREATE INDEX IF NOT EXISTS idx_players_club_id ON players(club_id);
+CREATE INDEX IF NOT EXISTS idx_tournaments_club_id ON tournaments(club_id);
+CREATE INDEX IF NOT EXISTS idx_games_tournament_id ON games(tournament_id);
 
