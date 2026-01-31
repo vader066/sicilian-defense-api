@@ -1,6 +1,4 @@
 import { pool } from "@/db/db";
-import { db, playerCollection } from "@/models/name";
-import { databases } from "@/models/server/config";
 import { PLAYER } from "@/types/database/models";
 
 export class PlayerRepository {
@@ -17,7 +15,7 @@ export class PlayerRepository {
 				player.date_of_birth,
 				player.sex,
 				player.rating,
-			]
+			],
 		);
 		return result.rows[0];
 	}
@@ -25,7 +23,7 @@ export class PlayerRepository {
 	async getPlayerByUsername(username: string): Promise<PLAYER | null> {
 		const result = await pool.query<PLAYER>(
 			"SELECT * FROM players WHERE username = $1",
-			[username]
+			[username],
 		);
 		const player = result.rows[0];
 		if (!player) return null;
@@ -36,7 +34,7 @@ export class PlayerRepository {
 	async getPlayerById(id: string): Promise<PLAYER | null> {
 		const result = await pool.query<PLAYER>(
 			"SELECT * FROM players WHERE id = $1",
-			[id]
+			[id],
 		);
 		const player = result.rows[0];
 		if (!player) return null;
@@ -48,13 +46,13 @@ export class PlayerRepository {
 		try {
 			const result = await pool.query<PLAYER>(
 				"SELECT * FROM players WHERE club_id = $1",
-				[clubId]
+				[clubId],
 			);
 			const players = result.rows;
 			return players;
 		} catch (error: any) {
 			throw new Error(
-				`Error in repo function getClubPlayers: ${error.message}`
+				`Error in repo function getClubPlayers: ${error.message}`,
 			);
 		}
 	}
@@ -104,7 +102,7 @@ export class PlayerRepository {
 					p.programme,
 					p.username,
 					p.club_id,
-					p.rating
+					p.rating,
 				);
 
 				return `(
@@ -135,7 +133,7 @@ export class PlayerRepository {
 		const insertCount = result.rowCount;
 		if (!insertCount) {
 			const error = new Error(
-				"Operation unsuccessfull. Add Bulk Players returned count null"
+				"Operation unsuccessfull. Add Bulk Players returned count null",
 			);
 			(error as any).code = 500;
 			throw error;
