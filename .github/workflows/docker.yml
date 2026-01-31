@@ -45,11 +45,11 @@ jobs:
 
       - name: Test container with curl
         run: |
-          curl --fail http://localhost:5001/api/health || (docker logs api-test && exit 1)
+          curl --fail http://localhost:5001/api/health || (docker compose -f docker-compose-staging.yaml logs api && exit 1)
 
       - name: Test db connection with curl
         run: |
-          curl --fail http://localhost:5001/api/health/db/e7b8f7c4-3b21-4c9e-a8f4-1d2f6a5f9b0a || (docker logs api && exit 1)
+          curl --fail http://localhost:5001/api/health/db || (docker compose -f docker-compose-staging.yaml logs api && exit 1)
 
       - name: Shutdown stack
         if: always()

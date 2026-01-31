@@ -21,7 +21,7 @@ router.route("/health").get((req, res) => {
 });
 
 //Check if server has access db to ensure db connection is working
-router.route("/health/db/:clubId").get(playerHandler.getClubPlayersHandler);
+router.route("/health/db").get(clubHandler.testHandler);
 
 // player routes
 router.route("/club/:clubId/players").get(playerHandler.getClubPlayersHandler);
