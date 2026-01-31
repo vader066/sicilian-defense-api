@@ -1,6 +1,8 @@
 import dotenv from "dotenv";
 import { parse } from "pg-connection-string";
 
+dotenv.config();
+
 // use host from the DATABASE_URL for hosting service and DB_HOST for local development and testing
 const config = parse(String(process.env.DATABASE_URL)!);
 let host: string;
@@ -9,8 +11,6 @@ if (process.env.NODE_ENV === "development") {
 } else {
 	host = String(config.host);
 }
-
-dotenv.config();
 
 const env = {
 	port: Number(process.env.PORT) || 5006,
