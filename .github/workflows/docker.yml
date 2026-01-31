@@ -23,30 +23,18 @@ jobs:
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/sicilian-defense-api:latest .
 
-      - name: Run container from image
+      - name: Start api server and db
         run: |
-          docker run -d \
-           --name api-test \
-           -p 5001:5001 \
-           -e NODE_ENV=${{ vars.NODE_ENV }} \
-           -e PORT=${{ vars.PORT }} \
-           -e DB_PORT=${{ vars.DB_PORT }} \
-           -e DB_HOST=${{ vars.DB_HOST }} \
-           -e DB_USER=${{ vars.DB_USER }} \
-           -e DB_NAME=${{ vars.DB_NAME }} \
-           -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-           -e ACCESS_JWTSECRET=${{ secrets.ACCESS_JWTSECRET }} \
-           -e REFRESH_JWTSECRET=${{ secrets.REFRESH_JWTSECRET }} \
-           ${{ secrets.DOCKERHUB_USERNAME }}/sicilian-defense-api:latest
-          sleep 10  # Wait for the app to start
+          docker compose -f docker-compose-staging.yaml up -d
+          sleep 15 # Wait for services to be fully up
 
       - name: Test container with curl
         run: |
           curl --fail http://localhost:5001/api/health || (docker logs api-test && exit 1)
 
-      - name: Stop and remove container
+      - name: Shutdown stack
         if: always()
-        run: docker rm -f api-test
+        run: docker compose -f docker-compose-staging.yaml down -v
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/sicilian-defense-api:latest

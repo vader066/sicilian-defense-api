@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - ./src/db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "${DB_PORT}:5432"
+
+  api:
+    image: ${DOCKERHUB_USERNAME}/sicilian-defense-api:latest
+    depends_on:
+      - db
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT}
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      ACCESS_JWTSECRET: ${ACCESS_JWTSECRET}
+      REFRESH_JWTSECRET: ${REFRESH_JWTSECRET}
+    ports:
+      - "5001:5001"
