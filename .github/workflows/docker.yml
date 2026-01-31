@@ -23,6 +23,21 @@ jobs:
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/sicilian-defense-api:latest .
 
+      - name: Create env file
+        run: |
+          cat <<EOF > .env
+          NODE_ENV=${{ vars.NODE_ENV }}
+          PORT=${{ vars.PORT }}
+          DB_HOST=${{ vars.DB_HOST }}
+          DB_PORT=${{ vars.DB_PORT }}
+          DB_USER=${{ vars.DB_USER }}
+          DB_NAME=${{ vars.DB_NAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          ACCESS_JWTSECRET=${{ secrets.ACCESS_JWTSECRET }}
+          REFRESH_JWTSECRET=${{ secrets.REFRESH_JWTSECRET }}
+          DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+          EOF
+
       - name: Start api server and db
         run: |
           docker compose -f docker-compose-staging.yaml up -d
