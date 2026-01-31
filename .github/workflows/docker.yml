@@ -23,26 +23,38 @@ jobs:
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/sicilian-defense-api:latest .
 
-      - name: Run container from image
+      - name: Create env file
         run: |
-          docker run -d \
-           --name api-test \
-           -p 5001:5001 \
-           -e PORT=${{ vars.PORT }} \
-           -e NODE_ENV=${{ vars.NODE_ENV }} \
-           -e PUBLIC_APPWRITE_HOST_URL=${{ vars.PUBLIC_APPWRITE_HOST_URL }} \
-           -e PUBLIC_APPWRITE_PROJECT_ID=${{ vars.PUBLIC_APPWRITE_PROJECT_ID }} \
-           -e APPWRITE_API_KEY=${{ secrets.APPWRITE_API_KEY }} \
-           ${{ secrets.DOCKERHUB_USERNAME }}/sicilian-defense-api:latest
-          sleep 10  # Wait for the app to start
+          cat <<EOF > .env
+          NODE_ENV=${{ vars.NODE_ENV }}
+          PORT=${{ vars.PORT }}
+          DB_HOST=${{ vars.DB_HOST }}
+          DB_PORT=${{ vars.DB_PORT }}
+          DB_USER=${{ vars.DB_USER }}
+          DB_NAME=${{ vars.DB_NAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          ACCESS_JWTSECRET=${{ secrets.ACCESS_JWTSECRET }}
+          REFRESH_JWTSECRET=${{ secrets.REFRESH_JWTSECRET }}
+          DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+          EOF
+
+      - name: Start api server and db
+        run: |
+          docker compose -f docker-compose-staging.yaml up -d
+          sleep 15 # Wait for services to be fully up
 
       - name: Test container with curl
         run: |
-          curl --fail http://localhost:5001/api/health || (docker logs api-test && exit 1)
+          curl --fail http://localhost:5001/api/health || (docker compose -f docker-compose-staging.yaml logs api && exit 1)
 
-      - name: Stop and remove container
+      - name: Test db connection with curl
+        run: |
+          curl --fail http://localhost:5001/api/health/db || (docker compose -f docker-compose-staging.yaml logs api && exit 1)
+
+      - name: Shutdown stack
         if: always()
-        run: docker rm -f api-test
+        run: docker compose -f docker-compose-staging.yaml down -v
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/sicilian-defense-api:latest

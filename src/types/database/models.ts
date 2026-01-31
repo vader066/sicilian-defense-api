@@ -1,49 +1,108 @@
 export interface CLUB {
-	name: string;
-	email: string;
-	players: Array<PLAYER>;
-	tournaments: Array<TOURNAMENT>;
+	id: string;
+	club_name: string;
+	number_of_players: number;
+	created_at?: string;
+	updated_at?: string;
 }
 
-export interface GAMES {
-	gameId: string;
-	black: string;
+export interface ADMIN {
+	id: string;
+	first_name: string;
+	last_name: string;
+	email: string;
+	club_id: string;
+	admin_name?: string;
+	username: string;
+	creator: boolean;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface ADMINAUTH {
+	admin_id: string;
+	password_hash: string;
+}
+
+export interface PLAYER {
+	id: string;
+	club_id: string;
+	first_name: string;
+	last_name: string;
+	programme: string;
+	username: string;
+	rating: number;
+	date_of_birth: string;
+	sex: "MALE" | "FEMALE";
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface REFRESHSESSION {
+	id: string;
+	user_id: string;
+	user_type: "ADMIN" | "PLAYER";
+	token_hash: string;
+	expires_at: string;
+	revoked_at?: string;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface GAME {
+	game_id: string;
 	white: string;
+	black: string;
 	winner?: string;
-	blackRating?: number; //Black Players Rating going into the game
-	whiteRating?: number; //White Players Rating going into the game
-	date: Date;
-	tournaments?: string;
-	draw?: boolean;
+	round: number;
+	black_rating?: number; // shouldn't be optional will change later
+	white_rating?: number; // shouldn't be optional will change later
+	played_at: string;
+	tournament_id?: string;
+	draw: boolean;
 	forfeit?: "BF" | "WF" | "FF"; // Black Forfeit, White Forfeit, Full(Both players) Forfeit
 }
 
+export interface DBTourney {
+	id: string;
+	tournament_name: string;
+	number_of_rounds: number;
+	number_of_players: number;
+	number_of_games: number;
+	status: "in_progress" | "completed" | "cancelled";
+	synced: boolean;
+	club_id: string;
+	began_at?: string;
+}
+
+export interface TOURNAMENT_PAIRINGS {
+	id: string;
+	tournament_id: string;
+	white?: string;
+	black?: string;
+	bye?: string;
+	round: number;
+	created_at: string;
+}
+
 export interface TOURNAMENT {
-	docId?: string; // Hyphenated tournament ID value
-	tournamentId: string;
-	games: Array<GAMES>;
-	players: Array<string>;
+	id: string;
+	tournamentName: string;
+	numberOfRounds: number;
+	numberOfGames: number;
+	status: "in_progress" | "completed" | "cancelled";
+	games: Array<GAME>;
+	playerIDs: Array<string>; // player id's
+	dbPlayers?: Array<PLAYER>; // don't use for now
 	synced?: boolean;
-	club?: string;
+	clubId: string;
+	beganAt: Date;
 }
 
 export type ratingUpdate = {
 	username: string;
 	newRating: number;
 };
-
-export interface PLAYER {
-	rating: number;
-	club: string;
-	sex: sex;
-	dob: Date;
-	username: string;
-	programme: string;
-	first_name: string;
-	last_name: string;
-}
-
-type sex = "male" | "female" | undefined;
 
 export interface APPWRITE_TOURNAMENT {
 	total: number;

@@ -16,20 +16,30 @@
 	"dependencies": {
 		"@types/express": "^5.0.1",
 		"@types/node": "^22.15.3",
+		"bcrypt": "^6.0.0",
 		"concurrently": "^9.1.2",
+		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
 		"dotenv": "^16.5.0",
 		"express": "^5.1.0",
+		"jsonwebtoken": "^9.0.2",
 		"module-alias": "^2.2.3",
 		"node-appwrite": "^16.0.0",
 		"nodemon": "^3.1.10",
+		"pg": "^8.16.3",
+		"pg-connection-string": "^2.11.0",
 		"rimraf": "^6.0.1",
 		"typescript": "^5.8.3",
-		"uuid": "^11.1.0"
+		"uuid": "^11.1.0",
+		"zod": "^4.1.12"
 	},
 	"devDependencies": {
+		"@types/bcrypt": "^6.0.0",
+		"@types/cookie-parser": "^1.4.10",
 		"@types/cors": "^2.8.18",
-		"@types/module-alias": "^2.0.4"
+		"@types/jsonwebtoken": "^9.0.10",
+		"@types/module-alias": "^2.0.4",
+		"@types/pg": "^8.15.6"
 	},
 	"_moduleAliases": {
 		"@": "./dist"
