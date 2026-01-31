@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { parse } from "pg-connection-string";
 
 // use host from the DATABASE_URL for hosting service and DB_HOST for local development and testing
-const config = parse(process.env.DATABASE_URL!);
+const config = parse(String(process.env.DATABASE_URL)!);
 let host: string;
 if (process.env.NODE_ENV === "development") {
 	host = String(process.env.DB_HOST);
