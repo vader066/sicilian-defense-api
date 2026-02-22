@@ -46,7 +46,8 @@ CREATE TABLE IF NOT EXISTS players (
   date_of_birth DATE NOT NULL,
   sex sex NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_players_username_club_id UNIQUE (username, club_id)
 );
 
 CREATE TABLE IF NOT EXISTS tournaments (

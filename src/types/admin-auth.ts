@@ -24,3 +24,15 @@ export class AuthError extends Error {
 		this.originalError = originalError;
 	}
 }
+
+export class ApiError extends Error {
+	status: number;
+	originalError?: unknown;
+
+	constructor(message: string, status: number = 500, originalError?: unknown) {
+		super(message);
+		this.name = "ApiError";
+		this.status = status;
+		this.originalError = originalError;
+	}
+}
