@@ -157,10 +157,11 @@ export class PlayerRepository {
 			// Postgres unique constraint violation
 			if (error.code === "23505") {
 				const detail: string = error.detail ?? "";
-				const match = detail.match(/Key \(username\)=\((.+?)\)/);
-				const username = match ? match[1] : "unknown";
+				// detail format: Key (username, club_id)=(<username>, <uuid>) already exists
+				const match = detail.match(/Key \(username, club_id\)=\(([^,]+),/);
+				const username = match ? match[1].trim() : "unknown";
 				const conflictError = new Error(
-					`A player with username "${username}" already exists`,
+					`A player with username "${username}" already exists in this club`,
 				);
 				(conflictError as any).code = 409;
 				throw conflictError;
