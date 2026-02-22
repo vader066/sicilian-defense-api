@@ -117,7 +117,7 @@ export class TournamentServiceHandler extends BaseHandler {
 			// Admin authorization - verify tournament and admin belong to the same club
 			const admin = await this.adminClient.getAdminByID(userId);
 			const tournament = await this.service.GetTournamentById(
-				req.params.tournamentId
+				req.params.tournamentId,
 			);
 			if (admin.club_id != tournament.club_id) {
 				res.status(403).json({
@@ -129,7 +129,7 @@ export class TournamentServiceHandler extends BaseHandler {
 
 			const updatedTournament = await this.service.SyncTournament(
 				tournament,
-				body
+				body,
 			);
 			res
 				.status(200)
@@ -145,10 +145,10 @@ export class TournamentServiceHandler extends BaseHandler {
 	getLichessArenaTournamentHandler = async (req: Request, res: Response) => {
 		try {
 			const tournamentId = req.params.id;
-			const { data: lichessTourney } = await getArenaGames(tournamentId);
-			res
-				.status(200)
-				.json({ message: "success", data: lichessTourney, status: 200 });
+			const { status, message, data } = await getArenaGames(tournamentId);
+
+			// will only be null if there was an error fetching/parsing the data
+			res.status(status).json({ message: message, data: data, status: status });
 		} catch (error: any) {
 			const status = this.errorStatus(error);
 			res
@@ -166,7 +166,7 @@ export class TournamentServiceHandler extends BaseHandler {
 			// validate request body
 			const body = this.validate<createRoundRobinTournamentReq>(
 				req,
-				createRoundRobinTournamentReqSchema
+				createRoundRobinTournamentReqSchema,
 			);
 
 			// generate round-robin pairings
@@ -190,7 +190,7 @@ export class TournamentServiceHandler extends BaseHandler {
 			// add round-robin pairings
 			const pairings = await this.service.addRoundRobinPairings(
 				rounds,
-				tournamentId
+				tournamentId,
 			);
 
 			const response = {

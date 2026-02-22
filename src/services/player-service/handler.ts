@@ -45,7 +45,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			const userId = this.authenticate(req);
 			const admin = await this.adminClient.getAdminByID(userId);
 			const result = await this.playerService.GetPlayerByID(
-				req.params.playerId
+				req.params.playerId,
 			);
 			if (admin.club_id != result.club_id) {
 				res.status(403).json({
@@ -74,7 +74,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			// Admin authorization - verify player and admin belong to the same club
 			const admin = await this.adminClient.getAdminByID(userId);
 			const player = await this.playerService.GetPlayerByID(
-				req.params.playerId
+				req.params.playerId,
 			);
 			if (admin.club_id != player.club_id) {
 				res.status(403).json({
@@ -89,9 +89,8 @@ export class PlayerServiceHandler extends BaseHandler {
 				id: player.id,
 				club_id: admin.club_id,
 			};
-			const updatedPlayer = await this.playerService.UpdatePlayer(
-				updatedFields
-			);
+			const updatedPlayer =
+				await this.playerService.UpdatePlayer(updatedFields);
 			res
 				.status(200)
 				.json({ message: "success", data: updatedPlayer, status: 200 });
