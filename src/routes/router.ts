@@ -3,6 +3,7 @@ import { ClubServiceHandler } from "@/services/club-service/handler";
 import { PlayerServiceHandler } from "@/services/player-service/handler";
 import { TournamentServiceHandler } from "@/services/tournament-service/handler";
 import { Router } from "express";
+import { upload } from "@/utils/upload";
 
 const router = Router();
 
@@ -29,6 +30,9 @@ router.route("/players/:playerId").get(playerHandler.getPlayerHandler);
 router.route("/players").post(playerHandler.createPlayerHandler);
 router.route("/players/:playerId").put(playerHandler.updatePlayerHandler);
 router.route("/players/populate").post(playerHandler.createPlayersHandler);
+router
+	.route("/players/upload")
+	.post(upload.single("file"), playerHandler.uploadPlayersHandler);
 // router.route("/players/:id").delete(deletePlayer); If we delete a player what happens to the games he has played? what happens to the tournaments and the ratings?
 
 // admin routes

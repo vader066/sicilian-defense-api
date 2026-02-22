@@ -1,6 +1,11 @@
 import { pool } from "@/db/db";
 import { PLAYER } from "@/types/database/models";
 
+/** pg returns NUMERIC columns as strings; coerce rating back to a number. */
+function parsePlayer(row: any): PLAYER {
+	return { ...row, rating: Number(row.rating) };
+}
+
 export class PlayerRepository {
 	async createPlayerV2(player: PLAYER) {
 		const result = await pool.query(
@@ -17,7 +22,7 @@ export class PlayerRepository {
 				player.rating,
 			],
 		);
-		return result.rows[0];
+		return parsePlayer(result.rows[0]);
 	}
 
 	async getPlayerByUsername(username: string): Promise<PLAYER | null> {
@@ -28,7 +33,7 @@ export class PlayerRepository {
 		const player = result.rows[0];
 		if (!player) return null;
 
-		return player;
+		return parsePlayer(player);
 	}
 
 	async getPlayerById(id: string): Promise<PLAYER | null> {
@@ -39,7 +44,7 @@ export class PlayerRepository {
 		const player = result.rows[0];
 		if (!player) return null;
 
-		return player;
+		return parsePlayer(player);
 	}
 
 	async getClubPlayers(clubId: string): Promise<PLAYER[]> {
@@ -48,8 +53,7 @@ export class PlayerRepository {
 				"SELECT * FROM players WHERE club_id = $1",
 				[clubId],
 			);
-			const players = result.rows;
-			return players;
+			return result.rows.map(parsePlayer);
 		} catch (error: any) {
 			throw new Error(
 				`Error in repo function getClubPlayers: ${error.message}`,
@@ -85,61 +89,87 @@ export class PlayerRepository {
 		]);
 
 		const updatedPlayer = result.rows[0];
-		return updatedPlayer;
+		return parsePlayer(updatedPlayer);
 	}
 
 	async addBulkPlayers(players: PLAYER[]): Promise<number> {
-		const values: any[] = [];
+		const client = await pool.connect();
 
-		const placeholders = players
-			.map((p, idx) => {
-				const base = idx * 8; // number of fields per player
-				values.push(
-					p.first_name,
-					p.last_name,
-					p.sex,
-					p.date_of_birth,
-					p.programme,
-					p.username,
-					p.club_id,
-					p.rating,
+		try {
+			await client.query("BEGIN");
+
+			const values: any[] = [];
+
+			const placeholders = players
+				.map((p, idx) => {
+					const base = idx * 8; // number of fields per player
+					values.push(
+						p.first_name,
+						p.last_name,
+						p.sex,
+						p.date_of_birth,
+						p.programme,
+						p.username,
+						p.club_id,
+						p.rating,
+					);
+
+					return `(
+          gen_random_uuid(),
+          $${base + 1},  -- first_name
+          $${base + 2},  -- last_name
+          $${base + 3},  -- sex
+          $${base + 4},  -- date_of_birth
+          $${base + 5},  -- programme
+          $${base + 6},  -- username
+          NOW(),
+          NOW(),
+          $${base + 7},  -- club_id
+          $${base + 8}   -- rating
+        )`;
+				})
+				.join(",\n");
+
+			const query = `
+      INSERT INTO players
+      (id, first_name, last_name, sex, date_of_birth, programme, username, created_at, updated_at, club_id, rating)
+      VALUES
+      ${placeholders}
+      RETURNING id;
+    `;
+
+			const result = await client.query(query, values);
+			await client.query("COMMIT");
+
+			const insertCount = result.rowCount;
+			if (!insertCount) {
+				const error = new Error(
+					"Operation unsuccessful. Add Bulk Players returned count null",
 				);
+				(error as any).code = 500;
+				throw error;
+			}
 
-				return `(
-        gen_random_uuid(),
-        $${base + 1},  -- first_name
-        $${base + 2},  -- last_name
-        $${base + 3},  -- sex
-        $${base + 4},  -- date_of_birth
-        $${base + 5},  -- programme
-        $${base + 6},  -- username
-        NOW(),
-        NOW(),
-        $${base + 7},  -- club_id
-        $${base + 8}   -- rating
-      )`;
-			})
-			.join(",\n");
+			return insertCount;
+		} catch (error: any) {
+			await client.query("ROLLBACK");
 
-		const query = `
-    INSERT INTO players
-    (id, first_name, last_name, sex, date_of_birth, programme, username, created_at, updated_at, club_id, rating)
-    VALUES
-    ${placeholders}
-    RETURNING id;
-  `;
+			// Postgres unique constraint violation
+			if (error.code === "23505") {
+				const detail: string = error.detail ?? "";
+				const match = detail.match(/Key \(username\)=\((.+?)\)/);
+				const username = match ? match[1] : "unknown";
+				const conflictError = new Error(
+					`A player with username "${username}" already exists`,
+				);
+				(conflictError as any).code = 409;
+				throw conflictError;
+			}
 
-		const result = await pool.query(query, values);
-		const insertCount = result.rowCount;
-		if (!insertCount) {
-			const error = new Error(
-				"Operation unsuccessfull. Add Bulk Players returned count null",
-			);
-			(error as any).code = 500;
 			throw error;
+		} finally {
+			client.release();
 		}
-
-		return insertCount;
 	}
 }
 
