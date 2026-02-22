@@ -11,7 +11,7 @@ if [ "$confirm" != "DEPLOY" ]; then
   exit 1
 fi
 
-for file in src/db/init/*.sql; do
+for file in src/db/migrations/*.sql; do
   echo "Running $file"
   psql "$DATABASE_URL" -f "$file"
 done

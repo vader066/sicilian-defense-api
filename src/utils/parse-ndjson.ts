@@ -27,5 +27,6 @@ export async function ParseNDjson<T>(response: Response) {
 		return data;
 	} else {
 		console.error("Unexpected content type:", contentType);
+		throw new Error("Invalid content type: Could not parse NDJSON");
 	}
 }

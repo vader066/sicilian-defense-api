@@ -6,6 +6,8 @@ import { PlayerReq, PlayerReqSchema } from "@/types/player";
 import { randomUUID } from "node:crypto";
 import z from "zod";
 import { AdminManagementService } from "../admin-management-service/service";
+import { parse } from "csv-parse/sync";
+import { validateCsv } from "./csv-validator";
 
 // Use arrow functions for the methods to automatically bind this
 
@@ -45,7 +47,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			const userId = this.authenticate(req);
 			const admin = await this.adminClient.getAdminByID(userId);
 			const result = await this.playerService.GetPlayerByID(
-				req.params.playerId
+				req.params.playerId,
 			);
 			if (admin.club_id != result.club_id) {
 				res.status(403).json({
@@ -74,7 +76,7 @@ export class PlayerServiceHandler extends BaseHandler {
 			// Admin authorization - verify player and admin belong to the same club
 			const admin = await this.adminClient.getAdminByID(userId);
 			const player = await this.playerService.GetPlayerByID(
-				req.params.playerId
+				req.params.playerId,
 			);
 			if (admin.club_id != player.club_id) {
 				res.status(403).json({
@@ -89,9 +91,8 @@ export class PlayerServiceHandler extends BaseHandler {
 				id: player.id,
 				club_id: admin.club_id,
 			};
-			const updatedPlayer = await this.playerService.UpdatePlayer(
-				updatedFields
-			);
+			const updatedPlayer =
+				await this.playerService.UpdatePlayer(updatedFields);
 			res
 				.status(200)
 				.json({ message: "success", data: updatedPlayer, status: 200 });
@@ -150,6 +151,79 @@ export class PlayerServiceHandler extends BaseHandler {
 			res.status(200).json({
 				message: "success",
 				data: { players_added: result, players_requested: body.length },
+				status: 200,
+			});
+		} catch (error: any) {
+			const status = this.errorStatus(error);
+			res
+				.status(status)
+				.json({ message: error.message, data: null, status: status });
+		}
+	};
+
+	uploadPlayersHandler = async (req: Request, res: Response) => {
+		try {
+			// authenticate user
+			const userId = this.authenticate(req);
+
+			// ensure a file was uploaded
+			if (!req.file) {
+				res
+					.status(400)
+					.json({ message: "No CSV file provided", data: null, status: 400 });
+				return;
+			}
+
+			// parse CSV into raw rows (arrays), first row is headers
+			const csvContent = req.file.buffer.toString("utf-8");
+			const rawRows: string[][] = parse(csvContent, {
+				skip_empty_lines: true,
+				trim: true,
+			});
+
+			if (rawRows.length === 0) {
+				res
+					.status(400)
+					.json({ message: "CSV file is empty", data: null, status: 400 });
+				return;
+			}
+
+			const headers = rawRows[0];
+			const dataRows: Record<string, string>[] = rawRows.slice(1).map((row) => {
+				const record: Record<string, string> = {};
+				headers.forEach((header, i) => {
+					record[header] = row[i] ?? "";
+				});
+				return record;
+			});
+
+			// validate headers then rows
+			const validation = validateCsv(headers, dataRows);
+			if (!validation.valid) {
+				res.status(400).json({
+					message: "CSV validation failed",
+					data: { errors: validation.errors },
+					status: 400,
+				});
+				return;
+			}
+
+			// assign club_id from authenticated admin; id is left empty because
+			// the repository generates it via gen_random_uuid() in the query.
+			const admin = await this.adminClient.getAdminByID(userId);
+			const players: PLAYER[] = validation.players.map((p) => ({
+				...p,
+				id: "",
+				club_id: admin.club_id,
+			}));
+
+			const result = await this.playerService.uploadPlayers(players);
+			res.status(200).json({
+				message: "success",
+				data: {
+					players_added: result,
+					players_requested: dataRows.length,
+				},
 				status: 200,
 			});
 		} catch (error: any) {

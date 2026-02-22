@@ -1,6 +1,15 @@
-CREATE TYPE user_types AS ENUM ('ADMIN', 'PLAYER');
+-- Create enum type only if it does not exist
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_type WHERE typname = 'user_types'
+  ) THEN
+    CREATE TYPE user_types AS ENUM ('ADMIN', 'PLAYER');
+  END IF;
+END$$;
 
-CREATE TABLE refresh_sessions (
+-- Create table only if it does not exist
+CREATE TABLE IF NOT EXISTS refresh_sessions (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL,
   user_type user_types NOT NULL,

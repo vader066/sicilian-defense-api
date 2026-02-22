@@ -1,3 +1,4 @@
+import { ApiError } from "@/types/admin-auth";
 import { ARENATOURNAMENTGAME } from "@/types/lichess/game";
 import { ParseNDjson } from "@/utils/parse-ndjson";
 
@@ -10,13 +11,12 @@ export async function getArenaGames(id: string) {
 				Accept: "application/x-ndjson",
 			},
 		});
-
 		if (!response.ok) {
-			throw new Error(`Response status: ${response.status}`);
+			throw new ApiError("Error fetching tournament games", response.status);
 		}
 		const parsedResponse = await ParseNDjson<ARENATOURNAMENTGAME>(response);
 		return { message: "success", data: parsedResponse, status: 200 };
 	} catch (error: any) {
-		return { message: error.message, data: null, status: error.code || 500 };
+		return { message: error.message, data: null, status: error.status };
 	}
 }

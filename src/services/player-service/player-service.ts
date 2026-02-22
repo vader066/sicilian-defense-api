@@ -89,4 +89,16 @@ export class PlayerService {
 		const rowsModified = await this.playerRepository.addBulkPlayers(players);
 		return rowsModified;
 	}
+
+	async uploadPlayers(players: PLAYER[]): Promise<number> {
+		// check if club exists
+		const clubId = players[0].club_id;
+		const club = await this.clubClient.getClubByID(clubId);
+		if (!club) {
+			throw new Error(`Club with ID ${clubId} does not exist`);
+		}
+
+		const rowsModified = await this.playerRepository.addBulkPlayers(players);
+		return rowsModified;
+	}
 }
