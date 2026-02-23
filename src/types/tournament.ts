@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { GameSchema } from "./game";
+import { DBTourney, GAME } from "./database/models";
 
 export const createTournamentReqSchema = z.object({
 	tournamentName: z.string(),
@@ -30,3 +31,15 @@ export const syncTournReqSchema = z.object({
 });
 
 export type syncTournReq = z.infer<typeof syncTournReqSchema>;
+
+export type RatingUpdate = {
+	playerId: string;
+	newRating: number;
+};
+
+export type AddTournamentWithGamesResult = {
+	tournament: DBTourney;
+	updatedGames: GAME[];
+	ratingUpdates: RatingUpdate[];
+	gamesAdded: number;
+};

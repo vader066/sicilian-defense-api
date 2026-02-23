@@ -107,14 +107,25 @@ function blackPoints(duel: GAME): number {
 	let score: 1 | 0 | 0.5;
 	if (duel.draw) {
 		score = 0.5;
-	} else if (duel.forfeit === "BF" || duel.forfeit === "FF") {
-		// If black forfeited or both forfeited, black gets 0 points
+	} else if (
+		duel.forfeit === "BF" ||
+		duel.forfeit === "FF" ||
+		duel.winner === duel.white
+	) {
+		// If only black forfeited or both forfeited, or white won black gets 0 points
 		score = 0;
-	} else if (duel.winner === duel.black) {
+	} else if (duel.winner === duel.black || duel.forfeit === "WF") {
+		// If black won or only white forfeited, black gets 1 point
 		score = 1;
 	} else {
 		throw new Error(
-			`Game result is invalid or missing for game_id: ${duel.game_id}`,
+			`Game result is invalid or missing for game_id: ${duel.game_id} /n
+      game winner: ${duel.winner} /n
+      black player: ${duel.black} /n
+      white player: ${duel.white}
+      draw: ${duel.draw} /n
+      forfiet: ${duel.forfeit}
+      `,
 		);
 	}
 	const ratingPoints = kFactor * (score - expectedScore);
@@ -130,14 +141,25 @@ function whitePoints(duel: GAME): number {
 	let score: 1 | 0 | 0.5;
 	if (duel.draw) {
 		score = 0.5;
-	} else if (duel.forfeit === "WF" || duel.forfeit === "FF") {
-		// If white forfeited or both forfeited, white gets 0 points
+	} else if (
+		duel.forfeit === "WF" ||
+		duel.forfeit === "FF" ||
+		duel.winner === duel.black
+	) {
+		// If only white forfeited or both forfeited or black won, white gets 0 points
 		score = 0;
-	} else if (duel.winner === duel.white) {
+	} else if (duel.winner === duel.white || duel.forfeit === "BF") {
+		// If white won or only black forfeited, white gets 1 point
 		score = 1;
 	} else {
 		throw new Error(
-			`Game result is invalid or missing for game_id: ${duel.game_id}`,
+			`Game result is invalid or missing for game_id: ${duel.game_id} /n
+      game winner: ${duel.winner} /n
+      black player: ${duel.black} /n
+      white player: ${duel.white}
+      draw: ${duel.draw} /n
+      forfiet: ${duel.forfeit}
+      `,
 		);
 	}
 	const ratingPoints = kFactor * (score - expectedScore);

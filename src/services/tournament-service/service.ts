@@ -8,7 +8,7 @@ import {
 import { TourneyRepository } from "./repository";
 import { GameService } from "../game-service/service";
 import { PlayerService } from "../player-service/player-service";
-import { syncTournReq } from "@/types/tournament";
+import { syncTournReq, AddTournamentWithGamesResult } from "@/types/tournament";
 import { generateFullRoundRobinSchedule, Round } from "@/utils/round-robin";
 import { randomUUID } from "node:crypto";
 import { ratingPointsEval } from ".";
@@ -40,7 +40,7 @@ export class TournamentService {
 	async CreateTournamentWithGames(
 		tournament: DBTourney,
 		games: GAME[],
-	): Promise<{ tournament: DBTourney; gamesAdded: number }> {
+	): Promise<AddTournamentWithGamesResult> {
 		// get all club players
 		const globPlayers = await this.playerClient.GetClubPlayers(
 			tournament.club_id,
@@ -57,11 +57,14 @@ export class TournamentService {
 		});
 
 		// run everything in a single transaction
-		return this.tournamentRepository.addTournamentWithGamesTransaction(
-			tournament,
-			updatedGames,
-			ratingUpdates,
-		);
+		const { tournament: createdTournament, gamesAdded } =
+			await this.tournamentRepository.addTournamentWithGamesTransaction(
+				tournament,
+				updatedGames,
+				ratingUpdates,
+			);
+
+		return { tournament: createdTournament, updatedGames, ratingUpdates, gamesAdded };
 	}
 
 	async GetTournamentWithGames(tourney: DBTourney): Promise<TOURNAMENT> {

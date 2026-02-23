@@ -69,16 +69,22 @@ export class TournamentServiceHandler extends BaseHandler {
 				number_of_players: body.playerIDs.length,
 				tournament_name: body.tournamentName,
 				number_of_rounds: body.numberOfRounds,
-				synced: false,
+				synced: true,
 			};
 
 			// single atomic transaction: insert tournament + games + update ratings
-			const { tournament: createdTourney, gamesAdded } =
-				await this.service.CreateTournamentWithGames(tournament, body.games);
+			const {
+				tournament: createdTourney,
+				updatedGames,
+				ratingUpdates,
+				gamesAdded,
+			} = await this.service.CreateTournamentWithGames(tournament, body.games);
 
 			const response = {
-				tournament_id: createdTourney.id,
-				games_added: gamesAdded,
+				tournament: createdTourney,
+				gamesAdded,
+				updatedGames,
+				ratingUpdates,
 			};
 			res.status(201).json({ message: "success", data: response, status: 201 });
 		} catch (error: any) {
