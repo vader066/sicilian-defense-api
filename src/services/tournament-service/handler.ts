@@ -60,10 +60,9 @@ export class TournamentServiceHandler extends BaseHandler {
 			const admin = await this.adminClient.getAdminByID(userId);
 			const body = this.validate<tournamentReq>(req, createTournamentReqSchema);
 
-			//add tournament to tournament table
-			const tournId = randomUUID();
+			// build tournament object (no DB write yet — transaction handles it)
 			const tournament: DBTourney = {
-				id: tournId,
+				id: randomUUID(),
 				club_id: admin.club_id,
 				status: "completed",
 				number_of_games: body.games.length,
@@ -73,22 +72,13 @@ export class TournamentServiceHandler extends BaseHandler {
 				synced: false,
 			};
 
-			// add tournament to tournament table
-			const createdTourney = await this.service.AddTournament(tournament);
-
-			// assign the created tournament's ID to the games tournament_id field
-			body.games.forEach((g) => {
-				g.tournament_id = tournId;
-			});
-
-			const result = await this.service.AddTournamentWithGames(
-				tournament.club_id,
-				body.games,
-			);
+			// single atomic transaction: insert tournament + games + update ratings
+			const { tournament: createdTourney, gamesAdded } =
+				await this.service.CreateTournamentWithGames(tournament, body.games);
 
 			const response = {
 				tournament_id: createdTourney.id,
-				games_added: result,
+				games_added: gamesAdded,
 			};
 			res.status(201).json({ message: "success", data: response, status: 201 });
 		} catch (error: any) {

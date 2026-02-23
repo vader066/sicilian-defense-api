@@ -37,32 +37,31 @@ export class TournamentService {
 		return tourney;
 	}
 
-	async AddTournamentWithGames(
-		tourney: DBTourney,
+	async CreateTournamentWithGames(
+		tournament: DBTourney,
 		games: GAME[],
-	): Promise<number> {
-		//get all club players
-		const globPlayers = await this.playerClient.GetClubPlayers(tourney.club_id);
+	): Promise<{ tournament: DBTourney; gamesAdded: number }> {
+		// get all club players
+		const globPlayers = await this.playerClient.GetClubPlayers(
+			tournament.club_id,
+		);
+
+		// assign tournament_id to every game and calculate ratings
+		games.forEach((g) => {
+			g.tournament_id = tournament.id;
+		});
 
 		const { updatedGames, ratingUpdates } = ratingPointsEval({
 			tourneyGames: games,
-			globPlayers: globPlayers,
+			globPlayers,
 		});
 
-		// add games to game table
-		const result = await this.gameClient.addGameList(updatedGames);
-
-		// update player ratings
-		const promises: Promise<PLAYER>[] = [];
-		ratingUpdates.forEach((update) => {
-			const player = globPlayers.find((p) => p.id === update.playerId);
-			player!.rating = update.newRating;
-			promises.push(this.playerClient.UpdatePlayer(player!));
-		});
-
-		await Promise.all(promises);
-
-		return result;
+		// run everything in a single transaction
+		return this.tournamentRepository.addTournamentWithGamesTransaction(
+			tournament,
+			updatedGames,
+			ratingUpdates,
+		);
 	}
 
 	async GetTournamentWithGames(tourney: DBTourney): Promise<TOURNAMENT> {
