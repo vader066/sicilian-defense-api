@@ -14,6 +14,8 @@ import {
 	createRoundRobinTournamentReqSchema,
 } from "@/types/tournament";
 import { getArenaGames } from "../lichess";
+import { ratingPointsEval } from ".";
+import { PlayerService } from "../player-service/player-service";
 
 // Use arrow functions for the methods to automatically bind this
 
@@ -21,6 +23,7 @@ export class TournamentServiceHandler extends BaseHandler {
 	private service = new TournamentService();
 	private adminClient = new AdminManagementService();
 	private gameClient = new GameService();
+	private playerClient = new PlayerService();
 
 	getTournamentWithGamesHandler = async (req: Request, res: Response) => {
 		try {
@@ -70,6 +73,7 @@ export class TournamentServiceHandler extends BaseHandler {
 				synced: false,
 			};
 
+			// add tournament to tournament table
 			const createdTourney = await this.service.AddTournament(tournament);
 
 			// assign the created tournament's ID to the games tournament_id field
@@ -77,8 +81,11 @@ export class TournamentServiceHandler extends BaseHandler {
 				g.tournament_id = tournId;
 			});
 
-			// add games
-			const result = await this.gameClient.addGameList(body.games);
+			const result = await this.service.AddTournamentWithGames(
+				tournament.club_id,
+				body.games,
+			);
+
 			const response = {
 				tournament_id: createdTourney.id,
 				games_added: result,

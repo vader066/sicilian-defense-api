@@ -1,5 +1,6 @@
 import {
 	DBTourney,
+	GAME,
 	PLAYER,
 	TOURNAMENT,
 	TOURNAMENT_PAIRINGS,
@@ -10,6 +11,7 @@ import { PlayerService } from "../player-service/player-service";
 import { syncTournReq } from "@/types/tournament";
 import { generateFullRoundRobinSchedule, Round } from "@/utils/round-robin";
 import { randomUUID } from "node:crypto";
+import { ratingPointsEval } from ".";
 
 export class TournamentService {
 	private tournamentRepository = new TourneyRepository();
@@ -18,9 +20,8 @@ export class TournamentService {
 	private playerClient = new PlayerService();
 
 	async GetTournamentById(tournamentId: string): Promise<DBTourney> {
-		const tourney = await this.tournamentRepository.getTournamentById(
-			tournamentId
-		);
+		const tourney =
+			await this.tournamentRepository.getTournamentById(tournamentId);
 
 		if (!tourney) {
 			let err = new Error() as any;
@@ -34,6 +35,34 @@ export class TournamentService {
 	async AddTournament(tournament: DBTourney): Promise<DBTourney> {
 		const tourney = await this.tournamentRepository.addTournament(tournament);
 		return tourney;
+	}
+
+	async AddTournamentWithGames(
+		tourney: DBTourney,
+		games: GAME[],
+	): Promise<number> {
+		//get all club players
+		const globPlayers = await this.playerClient.GetClubPlayers(tourney.club_id);
+
+		const { updatedGames, ratingUpdates } = ratingPointsEval({
+			tourneyGames: games,
+			globPlayers: globPlayers,
+		});
+
+		// add games to game table
+		const result = await this.gameClient.addGameList(updatedGames);
+
+		// update player ratings
+		const promises: Promise<PLAYER>[] = [];
+		ratingUpdates.forEach((update) => {
+			const player = globPlayers.find((p) => p.id === update.playerId);
+			player!.rating = update.newRating;
+			promises.push(this.playerClient.UpdatePlayer(player!));
+		});
+
+		await Promise.all(promises);
+
+		return result;
 	}
 
 	async GetTournamentWithGames(tourney: DBTourney): Promise<TOURNAMENT> {
@@ -72,24 +101,22 @@ export class TournamentService {
 	}
 
 	async ListClubTournaments(clubId: string): Promise<DBTourney[]> {
-		const tournaments = await this.tournamentRepository.getClubTournaments(
-			clubId
-		);
+		const tournaments =
+			await this.tournamentRepository.getClubTournaments(clubId);
 		return tournaments;
 	}
 
 	async SyncTournament(
 		tournament: DBTourney,
-		syncReq: syncTournReq
+		syncReq: syncTournReq,
 	): Promise<DBTourney> {
 		//get all club players
 		const players = await this.playerClient.GetClubPlayers(tournament.club_id);
 
 		// update synced value
 		tournament.synced = true;
-		const updatedTourney = await this.tournamentRepository.updateTournament(
-			tournament
-		);
+		const updatedTourney =
+			await this.tournamentRepository.updateTournament(tournament);
 
 		// verify if updates contain unknown players and throw error
 		const playerIDs = players.map((p) => p.id);
@@ -99,7 +126,7 @@ export class TournamentService {
 		});
 		if (!verify) {
 			throw Error(
-				"Player in updates request body did not match any player in the club's database"
+				"Player in updates request body did not match any player in the club's database",
 			);
 		}
 
@@ -122,7 +149,7 @@ export class TournamentService {
 
 	async addRoundRobinPairings(
 		rounds: Round[],
-		tournamentId: string
+		tournamentId: string,
 	): Promise<TOURNAMENT_PAIRINGS[]> {
 		const pairings: TOURNAMENT_PAIRINGS[] = [];
 
@@ -147,9 +174,7 @@ export class TournamentService {
 		return pairings;
 	}
 
-	async GetTournamentPairings(
-		tournamentId: string
-	): Promise<Round[] | null> {
+	async GetTournamentPairings(tournamentId: string): Promise<Round[] | null> {
 		const pairings =
 			await this.tournamentRepository.getTournamentPairings(tournamentId);
 
@@ -178,7 +203,7 @@ export class TournamentService {
 
 		// Convert map to sorted array
 		const rounds = Array.from(roundsMap.values()).sort(
-			(a, b) => a.round - b.round
+			(a, b) => a.round - b.round,
 		);
 
 		return rounds;

@@ -55,8 +55,8 @@ export interface GAME {
 	black: string;
 	winner?: string;
 	round: number;
-	black_rating?: number; // shouldn't be optional will change later
-	white_rating?: number; // shouldn't be optional will change later
+	black_rating?: number;
+	white_rating?: number;
 	played_at: string;
 	tournament_id?: string;
 	draw: boolean;
