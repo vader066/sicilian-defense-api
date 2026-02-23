@@ -14,6 +14,8 @@ import {
 	createRoundRobinTournamentReqSchema,
 } from "@/types/tournament";
 import { getArenaGames } from "../lichess";
+import { ratingPointsEval } from ".";
+import { PlayerService } from "../player-service/player-service";
 
 // Use arrow functions for the methods to automatically bind this
 
@@ -21,6 +23,7 @@ export class TournamentServiceHandler extends BaseHandler {
 	private service = new TournamentService();
 	private adminClient = new AdminManagementService();
 	private gameClient = new GameService();
+	private playerClient = new PlayerService();
 
 	getTournamentWithGamesHandler = async (req: Request, res: Response) => {
 		try {
@@ -57,31 +60,31 @@ export class TournamentServiceHandler extends BaseHandler {
 			const admin = await this.adminClient.getAdminByID(userId);
 			const body = this.validate<tournamentReq>(req, createTournamentReqSchema);
 
-			//add tournament to tournament table
-			const tournId = randomUUID();
+			// build tournament object (no DB write yet — transaction handles it)
 			const tournament: DBTourney = {
-				id: tournId,
+				id: randomUUID(),
 				club_id: admin.club_id,
 				status: "completed",
 				number_of_games: body.games.length,
 				number_of_players: body.playerIDs.length,
 				tournament_name: body.tournamentName,
 				number_of_rounds: body.numberOfRounds,
-				synced: false,
+				synced: true,
 			};
 
-			const createdTourney = await this.service.AddTournament(tournament);
+			// single atomic transaction: insert tournament + games + update ratings
+			const {
+				tournament: createdTourney,
+				updatedGames,
+				ratingUpdates,
+				gamesAdded,
+			} = await this.service.CreateTournamentWithGames(tournament, body.games);
 
-			// assign the created tournament's ID to the games tournament_id field
-			body.games.forEach((g) => {
-				g.tournament_id = tournId;
-			});
-
-			// add games
-			const result = await this.gameClient.addGameList(body.games);
 			const response = {
-				tournament_id: createdTourney.id,
-				games_added: result,
+				tournament: createdTourney,
+				gamesAdded,
+				updatedGames,
+				ratingUpdates,
 			};
 			res.status(201).json({ message: "success", data: response, status: 201 });
 		} catch (error: any) {

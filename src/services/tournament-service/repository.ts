@@ -1,5 +1,5 @@
 import { pool } from "@/db/db";
-import { DBTourney, GAME, TOURNAMENT_PAIRINGS } from "@/types/database/models";
+import { DBTourney, GAME, PLAYER, TOURNAMENT_PAIRINGS } from "@/types/database/models";
 
 export class TourneyRepository {
 	async addTournament(tournament: DBTourney): Promise<DBTourney> {
@@ -122,6 +122,95 @@ export class TourneyRepository {
 		}
 
 		return insertCount;
+	}
+
+	async addTournamentWithGamesTransaction(
+		tournament: DBTourney,
+		games: GAME[],
+		ratingUpdates: { playerId: string; newRating: number }[],
+	): Promise<{ tournament: DBTourney; gamesAdded: number }> {
+		const client = await pool.connect();
+		try {
+			await client.query("BEGIN");
+
+			// 1. Insert tournament
+			const tournamentResult = await client.query<DBTourney>(
+				"INSERT INTO tournaments (id, tournament_name, number_of_players, number_of_games, status, synced, club_id, number_of_rounds, began_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW()) RETURNING *",
+				[
+					tournament.id,
+					tournament.tournament_name,
+					tournament.number_of_players,
+					tournament.number_of_games,
+					tournament.status,
+					tournament.synced,
+					tournament.club_id,
+					tournament.number_of_rounds,
+				],
+			);
+			const createdTournament = tournamentResult.rows[0];
+
+			// 2. Bulk insert games
+			const values: any[] = [];
+			const placeholders = games
+				.map((g, idx) => {
+					const base = idx * 9;
+					values.push(
+						g.white,
+						g.black,
+						g.winner,
+						g.black_rating,
+						g.white_rating,
+						g.tournament_id,
+						g.draw,
+						g.forfeit,
+						g.round,
+					);
+					return `(
+				gen_random_uuid(),
+				$${base + 1},  -- white
+				$${base + 2},  -- black
+				$${base + 3},  -- winner
+				$${base + 4},  -- black_rating
+				$${base + 5},  -- white_rating
+				NOW(),         -- played_at
+				$${base + 6},  -- tournament_id
+				$${base + 7},  -- draw
+				$${base + 8},  -- forfeit
+				$${base + 9}   -- round
+			)`;
+				})
+				.join(",\n");
+
+			const gamesQuery = `
+				INSERT INTO games
+				(game_id, white, black, winner, black_rating, white_rating, played_at, tournament_id, draw, forfeit, round)
+				VALUES
+				${placeholders}
+				RETURNING game_id;
+			`;
+
+			const gamesResult = await client.query(gamesQuery, values);
+			const gamesAdded = gamesResult.rowCount;
+			if (!gamesAdded) {
+				throw new Error("Failed to insert games: rowCount was null");
+			}
+
+			// 3. Update player ratings
+			for (const update of ratingUpdates) {
+				await client.query(
+					"UPDATE players SET rating = $2, updated_at = NOW() WHERE id = $1",
+					[update.playerId, update.newRating],
+				);
+			}
+
+			await client.query("COMMIT");
+			return { tournament: createdTournament, gamesAdded };
+		} catch (error) {
+			await client.query("ROLLBACK");
+			throw error;
+		} finally {
+			client.release();
+		}
 	}
 
 	async getTournamentPairings(
